@@ -102,40 +102,8 @@ const ROLE_LABEL = {
 
 const SEED_ROSTER = [
   { id: "master1", firstName: "Master", lastName: "Admin01", username: "Master01", password: "cnb2026", role: "master_admin", bu: null, buList: null, employeeId: "TH00-24000" },
-  { id: "master2", firstName: "Master", lastName: "Admin02", username: "Master02", password: "cnb2026b", role: "master_admin", bu: null, buList: null, employeeId: "TH00-24999" },
-  { id: "itadmin", firstName: "IT", lastName: "Admin", username: "ITAdmin", password: "testonly1", role: "master_admin", bu: null, buList: null, testingOnly: true, employeeId: "TEST-0000" },
-
-  // P&O — Punjamaorn covers one entity; Charinee covers three
-  { id: "po-punjamaorn", firstName: "Punjamaorn", lastName: "Srisuwan", username: "Punjamaornsri", password: "100521988", role: "po_admin", bu: "UTSE", buList: null, employeeId: "TH00-24001" },
-  { id: "po-charinee", firstName: "Charinee", lastName: "Hemarajata", username: "Charineehem", password: "22091985", role: "po_admin", bu: null, buList: ["UTLC", "UTWC", "UTCT"], employeeId: "TH00-24002" },
-
-  // UTSE
-  { id: "utse-mgr", firstName: "Ponchanop", lastName: "Upathamp", username: "Ponchanopupa", password: "12071985", role: "staff", bu: "UTSE", department: "Operations", jobGrade: "M2", designation: "Operations Manager", managerId: "utse-sr", employeeId: "TH08-24010" },
-  { id: "utse-e1", firstName: "Vatanya", lastName: "Thikhieo", username: "Vatanyathi", password: "11101995", role: "staff", bu: "UTSE", department: "Operations", jobGrade: "S2", designation: "Frontline Officer", managerId: "utse-mgr", employeeId: "TH08-25003", functionalManagerId: "tpcg-fm1" },
-  { id: "utse-e2", firstName: "Somchai", lastName: "Boonmee", username: "Somchaiboo", password: "20021998", role: "staff", bu: "UTSE", department: "Operations", jobGrade: "S1", designation: "Frontline Officer", managerId: "utse-mgr", employeeId: "TH08-25004" },
-  { id: "utse-e3", firstName: "Anong", lastName: "Srisawat", username: "Anongsri", password: "05051990", role: "staff", bu: "UTSE", department: "Operations", jobGrade: "S3", designation: "Senior Officer", managerId: "utse-mgr", employeeId: "TH08-25005" },
-  // Pattern C: JG8, manages Ponchanop, is not evaluated themselves — just logs in to review.
-  { id: "utse-sr", firstName: "Kittipong", lastName: "Senanan", username: "Kittipongse", password: "03031978", role: "staff", bu: "UTSE", department: "Operations", jobGrade: "JG8", designation: "Senior Director", managerId: null, employeeId: "TH08-24001", needsEvaluation: false },
-  // Pattern D: JG7, not evaluated, no reports of their own — exists only to be picked as a delegate helper.
-  { id: "utse-dh", firstName: "Duangjai", lastName: "Meechai", username: "Duangjaimee", password: "15061982", role: "staff", bu: "UTSE", department: "Operations", jobGrade: "JG7", designation: "Principal Advisor", managerId: "utse-sr", employeeId: "TH08-24002", needsEvaluation: false },
-
-  // UTLC
-  { id: "utlc-mgr", firstName: "Wichai", lastName: "Thongdee", username: "Wichaitho", password: "01011982", role: "staff", bu: "UTLC", department: "Operations", jobGrade: "M2", designation: "Operations Manager", managerId: null, employeeId: "TH09-24011" },
-  { id: "utlc-e1", firstName: "Malee", lastName: "Chaisri", username: "Maleecha", password: "25121993", role: "staff", bu: "UTLC", department: "Operations", jobGrade: "S2", designation: "Frontline Officer", managerId: "utlc-mgr", employeeId: "TH09-25005" },
-  { id: "utlc-e2", firstName: "Prasit", lastName: "Nakorn", username: "Prasitnak", password: "30061997", role: "staff", bu: "UTLC", department: "Operations", jobGrade: "S1", designation: "Frontline Officer", managerId: "utlc-mgr", employeeId: "TH09-25006" },
-
-  // UTWC
-  { id: "utwc-mgr", firstName: "Chanida", lastName: "Suksawat", username: "Chanidasu", password: "18111984", role: "staff", bu: "UTWC", department: "Operations", jobGrade: "M2", designation: "Operations Manager", managerId: null, employeeId: "TH10-24012" },
-  { id: "utwc-e1", firstName: "Niran", lastName: "Kaewta", username: "Niranka", password: "09041996", role: "staff", bu: "UTWC", department: "Operations", jobGrade: "S2", designation: "Frontline Officer", managerId: "utwc-mgr", employeeId: "TH10-25007" },
-  { id: "utwc-e2", firstName: "Ratree", lastName: "Jaidee", username: "Ratreejai", password: "14081999", role: "staff", bu: "UTWC", department: "Operations", jobGrade: "S1", designation: "Frontline Officer", managerId: "utwc-mgr", employeeId: "TH10-25008" },
-
-  // UTCT
-  { id: "utsc-mgr", firstName: "Siriporn", lastName: "Kongkaew", username: "Siripornkon", password: "07021986", role: "staff", bu: "UTCT", department: "Operations", jobGrade: "M2", designation: "Operations Manager", managerId: null, employeeId: "TH11-24013" },
-  { id: "utsc-e1", firstName: "Decha", lastName: "Phromsri", username: "Dechaphr", password: "16071994", role: "staff", bu: "UTCT", department: "Operations", jobGrade: "S2", designation: "Frontline Officer", managerId: "utsc-mgr", employeeId: "TH11-25009" },
-  { id: "utsc-e2", firstName: "Waree", lastName: "Somsak", username: "Wareesom", password: "28032000", role: "staff", bu: "UTCT", department: "Operations", jobGrade: "S1", designation: "Frontline Officer", managerId: "utsc-mgr", employeeId: "TH11-25010" },
-
-  // TPC Group (Thailand) Limited — functional managers, not evaluated via this app.
-  { id: "tpcg-fm1", firstName: "Narong", lastName: "Kittiwat", username: "Narongkit", password: "22041975", role: "staff", bu: "TPCTH", department: "Group Operations", jobGrade: "JG9", designation: "Group Functional Director", managerId: null, employeeId: "TPCTH-1001", needsEvaluation: false },
+  { id: "master2", firstName: "Master", lastName: "Admin02", username: "Master02", password: "cnb2026", role: "master_admin", bu: null, buList: null, employeeId: "TH00-24001" },
+  { id: "master3", firstName: "Master", lastName: "Admin03", username: "Master03", password: "cnb2026", role: "master_admin", bu: null, buList: null, employeeId: "TH00-24002" },
 ];
 
 function hasReports(personId, roster) {
@@ -154,8 +122,8 @@ function adminBUs(person) {
   return [];
 }
 
-const ROSTER_KEY = "gva-roster-v6"; // bumped: v5 used TPCGT as the Group entity code, now TPCTH
-const LOG_KEY = "gva-export-log-v1";
+const ROSTER_KEY = "gva-roster-v7"; // bumped: v1.02 clean-slate reset — roster down to Master01-03 only, ready for the real Excel upload
+const LOG_KEY = "gva-export-log-v2"; // bumped alongside the v1.02 reset — old activity log referenced test users that no longer exist
 const CYCLE_KEY = "gva-current-cycle-v2"; // bumped: v1 had a "2026 H1" naming that's now retired
 const CYCLES_LIST_KEY = "gva-cycles-list-v2";
 const CYCLE_WINDOW_KEY = "gva-cycle-window-v1";
@@ -273,7 +241,7 @@ const FONT_IMPORT =
 // matching family instead of collapsing to one font.
 const FONT_STACK = "'Quicksand', 'Noto Sans Thai', 'Noto Sans SC', sans-serif";
 
-const STORAGE_KEY = "gva-journey-demo-v1";
+const STORAGE_KEY = "gva-journey-demo-v2"; // bumped alongside the v1.02 reset — orphans every test answer tied to the old roster
 
 /* ========================================================================
    CONTENT — pulled from the GVA form
@@ -2197,6 +2165,24 @@ function LoginScreen({ scope, onLogin }) {
       if (res.ok) {
         const data = await res.json();
         match = data.user;
+      } else {
+        setBusy(false);
+        if (res.status === 503) {
+          setError(t(
+            "The server hasn't finished setting up yet (no roster found). Reload this page once and try again — if it keeps happening, the Redis connection may not be configured in Vercel yet.",
+            "เซิร์ฟเวอร์ยังไม่พร้อม (ไม่พบข้อมูลพนักงาน) กรุณาโหลดหน้านี้ใหม่แล้วลองอีกครั้ง — หากยังไม่สำเร็จ อาจเป็นเพราะยังไม่ได้เชื่อมต่อ Redis บน Vercel",
+            lang
+          ));
+        } else if (res.status === 401) {
+          setError(t(
+            "The server rejected this request (unauthorized) — this is almost always a setup issue (API secret mismatch), not a wrong password. Please check the deployment configuration.",
+            "เซิร์ฟเวอร์ปฏิเสธคำขอนี้ (ไม่ได้รับอนุญาต) — มักเกิดจากปัญหาการตั้งค่า (API secret ไม่ตรงกัน) ไม่ใช่รหัสผ่านผิด กรุณาตรวจสอบการตั้งค่าระบบ",
+            lang
+          ));
+        } else {
+          setError(t(`Server error (status ${res.status}). Please try again, or check the Vercel function logs for /api/login.`, `เซิร์ฟเวอร์ขัดข้อง (สถานะ ${res.status}) กรุณาลองใหม่ หรือตรวจสอบ Vercel function logs ของ /api/login`, lang));
+        }
+        return;
       }
     } catch (e) {
       setBusy(false);

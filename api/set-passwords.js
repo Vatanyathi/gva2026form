@@ -16,7 +16,7 @@ const redis = new Redis({
   token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
-const ROSTER_KEY = "gva-roster-v6";
+const ROSTER_KEY = "gva-roster-v7";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
