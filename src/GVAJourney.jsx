@@ -39,6 +39,7 @@ import {
   TreeDeciduous,
   Sprout,
   Leaf,
+  Mountain,
   Link2Off,
 } from "lucide-react";
 
@@ -157,6 +158,7 @@ const ROSTER_KEY = "gva-roster-v6"; // bumped: v5 used TPCGT as the Group entity
 const LOG_KEY = "gva-export-log-v1";
 const CYCLE_KEY = "gva-current-cycle-v2"; // bumped: v1 had a "2026 H1" naming that's now retired
 const CYCLES_LIST_KEY = "gva-cycles-list-v2";
+const CYCLE_WINDOW_KEY = "gva-cycle-window-v1";
 const DEFAULT_CYCLE = "2026";
 
 async function loadRoster() {
@@ -220,6 +222,22 @@ async function saveCyclesList(list) {
     await window.storage.set(CYCLES_LIST_KEY, JSON.stringify(list), true);
   } catch (e) {
     console.error("cycles list save failed", e);
+  }
+}
+
+async function loadCycleWindow() {
+  try {
+    const res = await window.storage.get(CYCLE_WINDOW_KEY, true);
+    return res && res.value ? JSON.parse(res.value) : null;
+  } catch {
+    return null;
+  }
+}
+async function saveCycleWindow(window_) {
+  try {
+    await window.storage.set(CYCLE_WINDOW_KEY, JSON.stringify(window_), true);
+  } catch (e) {
+    console.error("cycle window save failed", e);
   }
 }
 
@@ -379,10 +397,10 @@ const STAGES_A4 = [
 ];
 
 const A5_DIMENSIONS = [
-  "Self-Cultivation (Individual)",
-  "Roles & Relationships (Team)",
-  "Stewardship (Organisation)",
-  "Consciousness (Universal)",
+  "Self-Cultivation – Individual Level",
+  "Role & Relationship – Team Level",
+  "Stewardship – Organizational Level",
+  "Consciousness – Universe Level",
 ];
 
 const SNAPSHOT_OPTIONS = [
@@ -400,173 +418,160 @@ const SECTIONS = [
   { id: "cover", nav: "Overview", track: null },
   {
     id: "a1", nav: "A1 · Self-Cultivation", track: "A", code: "A1",
-    title: "Self-Cultivation (Individual)",
+    title: "Self-Cultivation (Individual Level)",
     chinese: "修身 (Xiu Shen)",
     anchorMeaning: "Self-Cultivation — growth begins inside before it radiates outward.",
     intro: "Your daily habits, values, and approach to learning. How you are growing and developing yourself over time.",
     stages: STAGES_A1,
-    progression: "Movement from Developing → Established usually shows in a year of consistent practice, often after a setback that prompted a deeper reset.",
     confusion: "Just knowing TPC values is not self-cultivation. Self-cultivation is about whether values are LIVED in daily practice, and is visible in how you show up over time.",
     selfPrompts: [
-      "What have you noticed about yourself on this dimension — in feedback you've received, situations you've been in, or patterns you've spotted in your own habits and learning? One real moment carries further than a general theme.",
-      "What patterns, edges, or possibilities are inviting your growth at this stage? Just one is plenty — growth tends to take root when it's focused.",
+      "What have you noticed about yourself in this dimension of self-cultivation — from feedback you've received, situations you've been in, or patterns you've spotted in your own habits and learning? What invites you to grow and develop to the next stage?",
     ],
-    managerPrompts: ["What shift have you seen emerging in this dimension that he/she could build on intentionally next year? Anchor it to a moment if one comes to mind. How can you support him/her on this dimension?"],
-    fields: { self: "a1_self", manager: "a1_manager" },
+    managerPrompts: [
+      "What shift have you seen emerging in the dimension of self-cultivation in the Employee?",
+      "How could the Employee build on this intentionally next year? And how can you support the Employee's Journey in this dimension?",
+    ],
+    fields: { self: "a1_self", manager: "a1_manager", radio: "a1_stage" },
   },
   {
     id: "a2", nav: "A2 · Roles & Relationships", track: "A", code: "A2",
-    title: "Roles & Relationships (Team)",
+    title: "Role & Relationship (Team Level)",
     chinese: "齐家 (Qi Jia)",
     anchorMeaning: "Roles & Relationships — the middle stage, where individual contribution expands into conscious partnership.",
     intro: "How you build relationships and collaborate with your team and colleagues. The quality of how you connect.",
     stages: STAGES_A2,
-    progression: "Movement from Developing → Established usually shows in cross-team relationships forming and being maintained over multiple quarters.",
-    confusion: "Simply having many relationships does not translate to a 'Mature' growth stage. Maturity in this dimension is more about depth + others adopting the relational pattern, not breadth alone.",
+    confusion: "Simply having many relationships does not translate to a 'Mature' growth stage. Maturity in this dimension is more about depth and others adopting the relational pattern, not breadth alone.",
     selfPrompts: [
-      "What have you noticed about how you show up in relationships and on teams — in feedback, in specific interactions, or in patterns across the year? One real moment carries further than a general theme.",
-      "What's one shift in how you'd want to show up in your relationships? Just one is plenty.",
+      "What have you noticed about yourself in this dimension of Role & Relationship with Teams — in feedback, in situations, or in specific interactions? What invites you to grow and develop to the next stage?",
     ],
-    managerPrompts: ["What shift have you seen emerging in this dimension that he/she could build on intentionally next year? Anchor it to a moment if one comes to mind. How can you support him/her in this dimension?"],
-    fields: { self: "a2_self", manager: "a2_manager" },
+    managerPrompts: [
+      "What shift have you seen emerging in the dimension of Role & Relationship in the Employee?",
+      "How could the Employee build on this intentionally next year? And how can you support the Employee's Journey in this dimension?",
+    ],
+    fields: { self: "a2_self", manager: "a2_manager", radio: "a2_stage" },
   },
   {
     id: "a3", nav: "A3 · Stewardship", track: "A", code: "A3",
-    title: "Stewardship (Organisation)",
+    title: "Stewardship (Organisational Level)",
     chinese: "治国 (Zhi Guo)",
     anchorMeaning: "Leading not for oneself, but for the well-being of all entrusted to one's care.",
     intro: "How you take responsibility for your work and influence outcomes. How you lead, guide, and support others — whether or not you have a formal manager title.",
     stages: STAGES_A3,
-    progression: "Movement from Established → Mature is often catalysed by the manager intentionally creating space for the person to lead on a stretch initiative.",
-    confusion: "Stewardship goes beyond just titles or formal authority. It is about leadership quality regardless of role.",
+    confusion: "Stewardship goes beyond just titles or formal authority. It is about leadership quality regardless of role. The progression is often catalysed by the manager intentionally creating space for the person to lead on a stretch initiative.",
     selfPrompts: [
-      "What have you noticed about how you take ownership and influence outcomes — in moments where you stepped forward, or in patterns of how you respond when something needs leading? One real moment carries further than a general theme.",
-      "What's one shift in how you'd want to lead or influence going forward? Just one is plenty.",
+      "What have you noticed about yourself in this dimension of Stewardship — in moments where you stepped forward, or in patterns of how you respond when something needs leading? What invites you to grow and develop to the next stage?",
     ],
-    managerPrompts: ["What shift have you seen emerging in this dimension that he/she could build on intentionally next year? Anchor it to a moment if one comes to mind. How can you support him/her on this dimension?"],
-    fields: { self: "a3_self", manager: "a3_manager" },
+    managerPrompts: [
+      "What shift have you seen emerging in the dimension of Stewardship in the Employee?",
+      "How could the Employee build on this intentionally next year? And how can you support the Employee's Journey in this dimension?",
+    ],
+    fields: { self: "a3_self", manager: "a3_manager", radio: "a3_stage" },
   },
   {
     id: "a4", nav: "A4 · Consciousness", track: "A", code: "A4",
-    title: "Consciousness (Universal)",
+    title: "Consciousness (Universe Level)",
     chinese: "天人合一 (Tian Ren He Yi)",
     anchorMeaning: "Unity of Self and the Whole — the outermost sphere; consciousness as lived responsibility for the living system.",
     intro: "How you see your impact beyond yourself and your immediate work. Decisions and actions that consider long-term outcomes for the team, organisation, and wider system.",
     stages: STAGES_A4,
-    progression: "Stages are gradual. Cycle-over-cycle movement is the signal, not single-cycle judgment. Don't expect movement faster than once every 1-2 years.",
-    confusion: "Stages are NOT a hierarchy of \"good employees vs bad.\" Each stage is a legitimate place on a long developmental journey. To Me is not a failing; it's a foundation.",
+    confusion: "Cycle-over-cycle movement is the signal, not single-cycle judgment. Don't expect a fast movement. Stages are NOT a hierarchy of \"good employees vs bad.\" Each stage is a legitimate place on a long developmental journey.",
     stageRadio: true,
     selfPrompts: [
-      "What have you noticed recently about how you see your work in the larger system — in moments where you weighed broader impact, or where you noticed your perspective changing? One real moment carries further than a general theme.",
-      "What's one shift in how you'd want to hold the bigger picture? Just one is plenty.",
+      "What have you noticed about yourself in this dimension of Consciousness — in moments where you weighed broader impact, or where you noticed your perspective changing? What invites you to grow and develop to the next stage?",
     ],
-    managerPrompts: ["What shift have you seen emerging in this dimension that he/she could build on intentionally next year? Anchor it to a moment if one comes to mind. How can you support him/her on this dimension?"],
+    managerPrompts: [
+      "What shift have you seen emerging in the dimension of Consciousness in the Employee?",
+      "How could the Employee build on this intentionally next year? And how can you support the Employee's Journey in this dimension?",
+    ],
     fields: { self: "a4_self", manager: "a4_manager", radio: "a4_stage" },
   },
   { id: "a5", nav: "A5 · Growth Plan", track: "A", code: "A5", title: "Growth Plan", starred: true },
   {
     id: "b1-learning", nav: "B1 · Learning", track: "B", pillar: "Person", code: "LEARNING & SELF-CULTIVATION",
-    anchorZh: "对事以真", anchorEn: "Be Truthful to Our Work — Brand Credibility",
-    confusion: "Course completions alone ≠ growth. Look for what changed in your work afterwards.",
-    selfLabel: "Self-Reflection",
+    anchorEn: "The ability to learn, adapt from setbacks, and contribute to a learning culture within the organisation.",
+    selfLabel: "By Employee",
     selfPrompts: [
-      "Think of 1-2 moments that you'd point to as the strongest examples of your learning, adaptation, or growth in your role recently. For each: Situation/Challenge — what invited learning, growth or adaptation. What you did — actions to strengthen capabilities, habits, judgement, or mindset. Impact — how has your growth made a difference in your work, judgment, or the wider system?",
-      "Is there a smaller moment or a pattern that didn't fit as a headline above, but that you'd want included?",
+      "Give an example that reflects your learning, adaptation, or growth in your assigned role recently, specifying:",
     ],
     managerPrompts: [
-      "Where have you seen him/her actively cultivating themselves which suggests awareness, learning, adaptability or maturity?",
-      "What qualities, capabilities, or stewardship behaviours are beginning to emerge more consistently?",
-      "How has their growth influenced the way they work, relate to others, or steward responsibilities? Is their growth creating value beyond themselves?",
+      "What development have you seen reflecting the Employee's awareness, learning, and adaptability?",
+      "How did this event affect the way the Employee works, for the better?",
     ],
     fields: { self: "b1_learning_self", manager: "b1_learning_manager" },
   },
   {
-    id: "b1-integrity", nav: "B1 · Integrity", track: "B", pillar: "Person (managers)", code: "MANAGE WITH INTEGRITY (管以真)", managerOnly: true,
-    anchorZh: "对事以真", anchorEn: "Be Truthful to Our Work — Brand Credibility",
-    confusion: "Managing with Integrity is about HOW you managed, not WHAT gets delivered.",
-    selfLabel: "Self-Reflection",
+    id: "b1-integrity", nav: "B1 · Integrity", track: "B", pillar: "Person (managers)", code: "MANAGE WITH INTEGRITY", managerOnly: true,
+    anchorEn: "Integrity in management often begins with honesty and sincerity — to the organisation's mission, to colleagues, and to yourself.",
+    selfLabel: "By Employee",
     selfPrompts: [
-      "Think of 1-2 moments that show how you demonstrated integrity in the way you steward people, decisions and resources: the situation/tension, what you did to create clarity, accountability or alignment, and the impact on people, decisions, or outcomes.",
-      "Is there a smaller moment or pattern that didn't fit as a headline above, but that you'd want included?",
+      "Give an example that reflects how you managed your team and made decisions with integrity and sincerity, specifying:",
     ],
     managerPrompts: [
-      "Where have you observed him/her acting with honesty, courage, and accountability? How did he/she surface difficult issues and facilitate authentic alignment?",
-      "What would deepen his/her practice of managing with integrity?",
+      "What development have you seen reflecting the Employee's integrity and adherence to what's right?",
+      "How did this event affect the way the Employee works, for the better?",
     ],
     fields: { self: "b1_integrity_self", manager: "b1_integrity_manager" },
   },
   {
-    id: "b1-coaching", nav: "B1 · Coaching", track: "B", pillar: "Person (managers)", code: "MANAGE THROUGH COACHING (管以慈)", managerOnly: true,
-    anchorZh: "对下以慈", anchorEn: "Benevolence to Followers — Stewardship",
-    confusion: "Volume of coaching ≠ development.",
-    selfLabel: "Your reflection",
+    id: "b1-coaching", nav: "B1 · Coaching", track: "B", pillar: "Person (managers)", code: "MANAGE WITH COACHING", managerOnly: true,
+    anchorEn: "Developing others through questions, guidance, mentorship, and creating opportunities for others to grow.",
+    selfLabel: "By Employee",
     selfPrompts: [
-      "Think of 1-2 moments showing how you intentionally invested in the growth of your team: the person and their growth situation, the coaching/questions/space you created, and what's different now for that person.",
-      "How have you helped others become more capable and independent? How have you entrusted others with meaningful ownership?",
+      "Give an example that reflects how you prioritised people development, through coaching or guidance, specifying:",
     ],
     managerPrompts: [
-      "What evidence suggests that his/her team is becoming stronger, more capable, or more independent?",
-      "What can help him/her become a more effective developer of people?",
+      "What development have you seen reflecting the Employee's ability to grow into a managerial role?",
+      "How did this event affect the way the Employee works, for the better?",
     ],
     fields: { self: "b1_coaching_self", manager: "b1_coaching_manager" },
   },
   {
-    id: "b1-connection", nav: "B1 · Connection", track: "B", pillar: "Person (managers)", code: "MANAGE WITH CONNECTION (管以和)", managerOnly: true,
-    anchorZh: "对人以和", anchorEn: "Harmony with Others — Coherency",
-    confusion: "Social activities alone are not a direct indicator of managing with connection. Look for sustained well-being signal, not the count of team events.",
-    selfLabel: "Your reflection",
+    id: "b1-connection", nav: "B1 · Connection", track: "B", pillar: "Person (managers)", code: "MANAGE WITH CONNECTION", managerOnly: true,
+    anchorEn: "Building genuine relationships and caring for well-being, including fostering a culture of collaboration within the team.",
+    selfLabel: "By Employee",
     selfPrompts: [
-      "Think of 1-2 moments showing how you strengthened team coherence, connection and collective alignment: the tension or relationship that needed attention, what you did, and what changed for the people involved or the team dynamic.",
-      "How have you strengthened the sense of \"WE\" within the team or organisation?",
+      "Give an example that reflects how you strengthened bonds and unity within the team, specifying:",
     ],
     managerPrompts: [
-      "How does he/she bring people together around a shared purpose?",
-      "What would help him/her deepen their ability to unite people and perspectives?",
+      "What development have you seen reflecting the Employee building harmony within the team?",
+      "How did this event affect the way the Employee works, for the better?",
     ],
     fields: { self: "b1_connection_self", manager: "b1_connection_manager" },
   },
   {
     id: "b2-collab", nav: "B2 · Collaboration", track: "B", pillar: "Practice & Presence", code: "COLLABORATION & PARTNERSHIP",
-    anchorZh: "对人以和", anchorEn: "Harmony with Others — Coherency",
-    confusion: "\"Well-liked\" or popularity is not an indicator of good collaboration and partnership.",
-    selfLabel: "Your reflection",
+    anchorEn: "Supporting the success of others, building good relationships, and contributing beyond your own colleagues.",
+    selfLabel: "By Employee",
     selfPrompts: [
-      "Think of 1-2 moments showing how you enabled others and/or co-created outcomes not possible alone: the situation that called for working with others, what you did and who with, and what changed for the people involved or the team.",
-      "Is there a smaller moment or pattern that didn't fit as a headline above, but that you'd want included?",
+      "Give an example that reflects how you supported a colleague's work — especially someone from another team — to a successful outcome, specifying:",
     ],
     managerPrompts: [
-      "How effectively does he/she build partnerships and collaborate across boundaries?",
-      "How do they balance his/her own interests with those of the wider organisation?",
+      "What development have you seen reflecting collaboration between the Employee and colleagues from other teams?",
+      "How did this event affect the way the Employee works, for the better?",
     ],
     fields: { self: "b2_collab_self", manager: "b2_collab_manager" },
   },
   {
     id: "b2-steward", nav: "B2 · Accountability", track: "B", pillar: "Practice & Presence", code: "STEWARDSHIP & ACCOUNTABILITY",
-    anchorZh: "对上以敬", anchorEn: "Respect the Leader, including informed challenge — Stewardship",
-    confusion: "Straightforward compliance does not equate to good stewardship. What creates regenerative impact is when constructive challenges result in better outcomes.",
-    selfLabel: "Your reflection",
+    anchorEn: "Values, taking accountability, and constructive challenge in service of better outcomes.",
+    selfLabel: "By Employee",
     selfPrompts: [
-      "Think of 1-2 moments showing how you upheld accountability or stewarded resources entrusted to you: the responsibility/resource/relationship, the trade-offs or decisions you made, and the outcome.",
-      "Have you offered a genuine view — including a doubt, disagreement, or uncomfortable truth — even though it would have been easier to stay quiet? What happened as a result?",
+      "Give an example that reflects how you took accountability, voiced your view, and carried out an assigned task exceptionally well, specifying:",
     ],
-    managerPrompts: ["Have you seen him/her offer a genuine view — including doubt or disagreement — rather than the answer that seemed expected? How did he/she do it, and what did it cost him/her, if anything?"],
+    managerPrompts: ["Has the Employee proactively shared opinions or creative ideas at work? How?"],
     fields: { self: "b2_steward_self", manager: "b2_steward_manager" },
   },
   {
     id: "b2-innovation", nav: "B2 · Innovation", track: "B", pillar: "Practice & Presence", code: "INNOVATION & ENTREPRENEURSHIP",
-    anchorZh: "对生命增值", anchorEn: "Add Value to Life — Entrepreneurship",
-    confusion: "Many ideas without follow-through ≠ innovation. Look for outcomes the organisation adopted.",
-    selfLabel: "Your reflection",
+    anchorEn: "Creating something new, adapting to change, and turning ideas into results that can actually be put into practice.",
+    selfLabel: "By Employee",
     selfPrompts: [
-      "Think of 1-2 moments showing how you improved, challenged, or created something that strengthened the system: the opportunity/problem/unmet need, the idea or change you brought, and what came of it.",
-      "What have you done to improve the future, not just solve today's issue?",
+      "Give an example that reflects an idea you created for the benefit of the wider organisation, specifying:",
     ],
-    managerPrompts: [
-      "What evidence suggests that he/she creates value that continues beyond their direct involvement?",
-      "How does he/she balance innovation with stewardship and responsibility?",
-    ],
+    managerPrompts: ["Has the Employee created something new beyond their assigned work? How?"],
     fields: { self: "b2_innovation_self", manager: "b2_innovation_manager" },
   },
+  { id: "b3", nav: "B3 · Performance", track: "B", pillar: "Performance", code: "DELIVERING RESULTS & IMPACT", fields: { self: "b3_results_self", manager: "b3_results_manager" } },
   { id: "b4", nav: "B4 · Overall", track: "B", pillar: "Overall", code: "OVERALL & SNAPSHOT" },
 ];
 
@@ -578,232 +583,243 @@ const SECTIONS = [
 ========================================================================= */
 const SECTIONS_TH = {
   a1: {
-    title: "การขัดเกลาตนเอง (ระดับบุคคล)",
-    anchorMeaning: "ยึดหลักจาก 修身 (Xiu Shen) — การขัดเกลาตนเอง: การเติบโตเริ่มจากภายในก่อนที่จะแผ่ขยายออกไปสู่ภายนอก",
-    intro: "พฤติกรรมที่ทำเป็นประจำ ค่านิยม และวิธีการเรียนรู้ของคุณ รวมถึงวิธีที่คุณเติบโตและพัฒนาตนเองไปตามช่วงเวลา",
+    title: "ด้านการทบทวนตนเอง (Self-cultivation – Individual Level)",
+    anchorMeaning: "ความเปลี่ยนแปลงที่ดีเริ่มต้นจากแนวคิดภายในของตนเอง ที่สะท้อนออกมาผ่านการทำงานและการปฏิบัติตนต่อผู้อื่น",
+    intro: "มุมมองเกี่ยวกับพฤติกรรมการใช้ชีวิต และการเรียนรู้ รวมถึงการพัฒนาตนเองเมื่อเวลาผ่านไป",
     stages: [
-      { stage: "เติบโตเต็มที่", looksLike: "การขัดเกลาตนเองกลายเป็นพื้นฐานที่ทำให้งานทุกอย่างเกิดขึ้น ผู้อื่นเรียนรู้จากแนวทางปฏิบัติของคุณ", youdSay: "คนอื่นมักมาถามฉันว่าทำอย่างไรถึงรักษาแนวทางแบบนี้ไว้ได้", managerSees: "ปฏิบัติได้อย่างสม่ำเสมอตลอด 4 ไตรมาส และเพื่อนร่วมงานยกให้เป็นแบบอย่างด้านการเรียนรู้" },
-      { stage: "มั่นคง", looksLike: "ทบทวนตนเองอย่างสม่ำเสมอ ยึดค่านิยมเดียวกันในทุกสถานการณ์ และเรียนรู้ด้วยความสมัครใจ ไม่ใช่เพราะถูกสั่งให้ทำ", youdSay: "พฤติกรรมของฉันส่วนใหญ่เป็นไปตามแนวทางแล้ว ค่านิยมเหล่านี้รู้สึกเหมือนเป็นของฉันเอง", managerSees: "ปฏิบัติตาม 8 พฤติกรรมหลักอย่างสม่ำเสมอ; บันทึก Stewardship of Life ระบุการเปลี่ยนแปลงที่ชัดเจน; การโค้ชแสดงให้เห็นว่านำการเรียนรู้ไปใช้จริง" },
-      { stage: "กำลังพัฒนา", looksLike: "กำลังสร้างพฤติกรรมการทบทวนตนเอง ความเข้าใจเรื่องค่านิยมเริ่มก่อตัวขึ้น และเริ่มเห็นการปรับตัวบางส่วน", youdSay: "ฉันเริ่มมองเห็นรูปแบบของตัวเองแล้ว แต่การทบทวนตนเองยังไม่เป็นไปโดยอัตโนมัติ", managerSees: "ปฏิบัติตาม 8 พฤติกรรมหลักเป็นบางครั้ง; มีบันทึกแต่ยังเป็นเนื้อหาทั่วไป; ตอบรับการโค้ชในทางบวกแต่ยังไม่นำไปใช้จริงเสมอไป" },
-      { stage: "เริ่มต้น", looksLike: "ตระหนักว่าการขัดเกลาตนเองเป็นทิศทางที่ควรมุ่งไป มีการทบทวนตนเองเป็นครั้งคราว และพฤติกรรมยังไม่สม่ำเสมอ", youdSay: "ฉันรู้ว่าการทบทวนตนเองและพฤติกรรมที่ดีเป็นเรื่องสำคัญ แต่ยังไม่ได้ฝึกฝนจนเป็นความเคยชิน", managerSees: "ปฏิบัติตาม 8 พฤติกรรมหลักเป็นครั้งคราว; มีบันทึกน้อย; มีสัญญาณของความตระหนักรู้แต่ยังไม่เห็นรูปแบบการนำไปใช้จริง" },
+      { stage: "ก้าวหน้าอย่างมั่นคง (Mature)", looksLike: "การพัฒนาและทบทวนตนเองเป็นพื้นฐานที่ทำให้งานทุกอย่างเกิดขึ้น และผู้อื่นสามารถเรียนรู้จากแนวทางปฏิบัติของฉันได้", youdSay: "คนอื่นมักถามฉันว่าทำอย่างไรถึงจะรักษาอุดมการณ์แบบนี้ได้", managerSees: "ปฏิบัติตาม 8 พฤติกรรมหลัก (8 Living Habits) ได้อย่างสม่ำเสมอ และผู้อื่นมองเป็นแบบอย่าง" },
+      { stage: "พัฒนามั่นคง (Established)", looksLike: "ทบทวนตนเองอย่างสม่ำเสมอ ยึดมั่นในค่านิยม และแสวงหาการเรียนรู้ด้วยตนเองโดยสมัครใจ", youdSay: "ค่านิยมต่างๆกลายเป็นส่วนหนึ่งของฉัน ไม่ใช่กฎที่ถูกกำหนดโดยสังคมภายนอก", managerSees: "ปฏิบัติตาม 8 พฤติกรรมหลัก (8 Living Habits) มากขึ้น มีการสังเกตตนเอง แลกเปลี่ยนบทสนทนากับผู้อื่น และนำไปปฏิบัติในชีวิตจริงอย่างต่อเนื่อง" },
+      { stage: "กำลังพัฒนา (Developing)", looksLike: "อยู่ระหว่างการฝึกทบทวนตนเอง เริ่มตระหนักถึงค่านิยมบางอย่าง และเริ่มเห็นแนวคิดการพัฒนาตนเอง", youdSay: "ฉันเริ่มมองเห็นการพัฒนาตนเอง แต่ยังต้องใช้ความพยายามในการทบทวนตนเองให้เป็นนิสัย", managerSees: "ปฏิบัติตาม 8 พฤติกรรมหลัก (8 Living Habits) บ้าง มีการสังเกตตนเอง แลกเปลี่ยนบทสนทนากับผู้อื่น และนำไปปฏิบัติในชีวิตจริงแต่ไม่สม่ำเสมอ" },
+      { stage: "อยู่ในขั้นเริ่มต้น (Emerging)", looksLike: "ตระหนักได้ว่าการพัฒนาและทบทวนตนเองเป็นเรื่องสำคัญ มีการทบทวนตนเองเป็นครั้งคราว แต่ไม่สม่ำเสมอ", youdSay: "ฉันรู้ว่าการทบทวนพฤติกรรมและแนวคิดของตนเองเป็นเรื่องสำคัญ แต่ยังไม่ได้เริ่มฝึกฝน", managerSees: "ปฏิบัติตาม 8 พฤติกรรมหลัก (8 Living Habits) เป็นครั้งคราว มีสัญญาณของความตระหนักรู้ แต่ยังไม่เห็นรูปแบบการนำไปใช้ในชีวิตจริง" },
     ],
-    progression: "การเปลี่ยนจากระดับกำลังพัฒนา → ไปสู่ระดับมั่นคง มักใช้เวลาประมาณหนึ่งปีของการปฏิบัติอย่างสม่ำเสมอ และบ่อยครั้งเกิดขึ้นหลังจากเผชิญอุปสรรคที่ทำให้ต้องกลับมาตั้งหลักใหม่อย่างจริงจัง",
-    confusion: "การรู้จักค่านิยมของ TPC เพียงอย่างเดียวไม่ใช่การขัดเกลาตนเอง การขัดเกลาตนเองคือการที่ค่านิยมเหล่านั้นถูกนำมาใช้จริงในชีวิตประจำวัน และเห็นได้จากวิธีที่คุณแสดงตัวออกมาอย่างต่อเนื่องตามช่วงเวลา",
+    confusion: "การตระหนักรู้และเข้าใจค่านิยมของบริษัทนั้นอาจยังไม่เพียงพอ การพัฒนาตนเองอย่างแท้จริงคือการนำค่านิยมต่างๆมาประยุกต์ใช้ในชีวิตประจำวัน โดยสะท้อนจากวิธีที่คุณปฏิบัติต่อตนเองและผู้อื่น",
     selfPrompts: [
-      "คุณสังเกตเห็นอะไรเกี่ยวกับตัวเองในด้านนี้บ้าง — จากคำติชมที่ได้รับ สถานการณ์ที่คุณเผชิญ หรือรูปแบบที่คุณสังเกตเห็นในพฤติกรรมและการเรียนรู้ของตัวเอง เหตุการณ์จริงเพียงหนึ่งเรื่องมีพลังมากกว่าการพูดถึงภาพรวมกว้าง ๆ",
-      "มีรูปแบบ ขอบเขต หรือความเป็นไปได้ใดบ้างที่กำลังชักชวนให้คุณเติบโตในช่วงนี้? เพียงเรื่องเดียวก็เพียงพอแล้ว",
-    ],
-    managerPrompts: ["คุณเห็นการเปลี่ยนแปลงอะไรเกิดขึ้นในด้านนี้ ที่เขา/เธอสามารถนำไปพัฒนาต่ออย่างตั้งใจในปีหน้า? หากนึกถึงเหตุการณ์ใดเหตุการณ์หนึ่งได้ ให้ยกมาเป็นตัวอย่าง และคุณจะสนับสนุนเขา/เธอในด้านนี้ได้อย่างไร?"],
-  },
-  a2: {
-    title: "บทบาทและความสัมพันธ์ (ระดับทีม)",
-    anchorMeaning: "ยึดหลักจาก 齐家 (Qi Jia) — บทบาทและความสัมพันธ์: ขั้นกลางที่ผลงานของแต่ละบุคคลขยายไปสู่ความร่วมมืออย่างมีสติกับผู้อื่น",
-    intro: "วิธีที่คุณสร้างความสัมพันธ์และร่วมมือกับทีมและเพื่อนร่วมงาน รวมถึงคุณภาพของการเชื่อมโยงกับผู้อื่น",
-    stages: [
-      { stage: "เติบโตเต็มที่", looksLike: "สร้างระบบความสัมพันธ์ที่ผู้อื่นนำไปใช้ต่อได้ และแสดงออกครบทั้ง 5 แนวทางของ Relational Matrix ในทุกสถานการณ์", youdSay: "คนอื่นมักมาถามฉันว่าทำอย่างไรถึงสร้างความไว้วางใจข้ามทีมได้", managerSees: "เครือข่ายทั้งภายในและภายนอกแข็งแรง; ครบทั้ง 5 แนวทางอย่างสม่ำเสมอ; ความเห็นของเพื่อนร่วมงานนอกทีมสอดคล้องไปในทางเดียวกัน" },
-      { stage: "มั่นคง", looksLike: "มีเครือข่ายที่แข็งแรง แสดงแนวทางความสัมพันธ์อย่างสม่ำเสมอ และปฏิบัติต่อกันด้วยการให้และรับอย่างเท่าเทียม", youdSay: "ฉันมีความสัมพันธ์ในการทำงานกับทีมส่วนใหญ่ที่เกี่ยวข้อง และลงทุนเวลาให้กับความสัมพันธ์เหล่านั้น", managerSees: "เครือข่ายภายในและภายนอกมีความสมดุล; แสดงแนวทางอย่างน้อย 4 จาก 5 แนวทางอย่างสม่ำเสมอ" },
-      { stage: "กำลังพัฒนา", looksLike: "มีความสัมพันธ์ที่ดีภายในทีม เริ่มขยายไปสู่ทีมอื่น และแสดงแนวทางบางส่วนออกมาแล้ว", youdSay: "เครือข่ายของฉันส่วนใหญ่ยังอยู่ในทีมของตัวเอง แต่เริ่มเปิดตัวออกไปข้างนอกแล้ว", managerSees: "เครือข่ายภายในทีมกำลังเติบโต; เครือข่ายภายนอกเริ่มก่อตัว; แสดงแนวทางบางส่วน" },
-      { stage: "เริ่มต้น", looksLike: "มุ่งเน้นเฉพาะบทบาทของตนเอง มีความสัมพันธ์ข้ามทีมจำกัด ตระหนักรู้แต่ยังไม่ได้แสดงออกอย่างจริงจัง", youdSay: "ฉันโฟกัสกับงานของตัวเองและทีมที่ใกล้ชิดเป็นหลัก", managerSees: "เครือข่ายข้ามทีมยังมีน้อย; แสดงแนวทางนอกเหนือจากทีมของตนเองเพียงเล็กน้อย" },
-    ],
-    progression: "การเปลี่ยนจากระดับกำลังพัฒนา → ไปสู่ระดับมั่นคง มักเห็นได้จากความสัมพันธ์ข้ามทีมที่ก่อตัวขึ้นและรักษาไว้ได้ต่อเนื่องหลายไตรมาส",
-    confusion: "การมีความสัมพันธ์จำนวนมากไม่ได้แปลว่าอยู่ในระดับเติบโตเต็มที่เสมอไป ความเติบโตเต็มที่ในด้านนี้เน้นที่ความลึกของความสัมพันธ์ และการที่ผู้อื่นนำรูปแบบความสัมพันธ์นั้นไปใช้ต่อ ไม่ใช่แค่ความกว้างของเครือข่าย",
-    selfPrompts: [
-      "คุณสังเกตเห็นอะไรเกี่ยวกับวิธีที่คุณแสดงตัวในความสัมพันธ์และการทำงานเป็นทีมบ้าง — จากคำติชม จากปฏิสัมพันธ์เฉพาะเจาะจง หรือจากรูปแบบที่เกิดขึ้นตลอดปี เหตุการณ์จริงเพียงหนึ่งเรื่องมีพลังมากกว่าการพูดถึงภาพรวมกว้าง ๆ",
-      "มีการเปลี่ยนแปลงใดหนึ่งอย่างที่คุณอยากให้เกิดขึ้นในวิธีที่คุณแสดงตัวในความสัมพันธ์? เพียงเรื่องเดียวก็เพียงพอ",
-    ],
-    managerPrompts: ["คุณเห็นการเปลี่ยนแปลงอะไรเกิดขึ้นในด้านนี้ ที่เขา/เธอสามารถนำไปพัฒนาต่ออย่างตั้งใจในปีหน้า? หากนึกถึงเหตุการณ์ใดเหตุการณ์หนึ่งได้ ให้ยกมาเป็นตัวอย่าง และคุณจะสนับสนุนเขา/เธอในด้านนี้ได้อย่างไร?"],
-  },
-  a3: {
-    title: "การดูแลรับผิดชอบ (ระดับองค์กร)",
-    anchorMeaning: "ยึดหลักจาก 治国 (Zhi Guo) — การนำที่ไม่ใช่เพื่อตนเอง แต่เพื่อความเป็นอยู่ที่ดีของทุกคนที่ได้รับความไว้วางใจให้ดูแล",
-    intro: "วิธีที่คุณรับผิดชอบต่องานของตนเองและสร้างอิทธิพลต่อผลลัพธ์ รวมถึงวิธีที่คุณนำ ชี้แนะ และสนับสนุนผู้อื่น ไม่ว่าคุณจะมีตำแหน่งหัวหน้างานอย่างเป็นทางการหรือไม่ก็ตาม",
-    stages: [
-      { stage: "เติบโตเต็มที่", looksLike: "สร้างสภาพแวดล้อมที่เอื้อให้ผู้อื่นก้าวขึ้นเป็นผู้นำ บ่มเพาะผู้นำรุ่นใหม่ และทำให้ระบบโดยรวมฉลาดขึ้นจากผลงานของคุณ", youdSay: "ฉันมองว่าตัวเองกำลังสร้างผู้นำรุ่นต่อไป ไม่ใช่แค่นำงานปัจจุบันเท่านั้น", managerSees: "แสดงออกครบทั้ง 4 กรอบความคิด; สัญญาณตาม Mintzberg แสดงบทบาทเชิงรุกเป็นหลัก; มีหลักฐานชัดเจนของการบ่มเพาะผู้นำคนอื่น" },
-      { stage: "มั่นคง", looksLike: "นำได้โดยไม่ต้องมีตำแหน่งอย่างเป็นทางการ ทำให้ระบบฉลาดขึ้นผ่านอิทธิพลของตนเอง และมีความคิดริเริ่มที่เชื่อถือได้", youdSay: "ฉันมีความคิดริเริ่มอย่างสม่ำเสมอ และอิทธิพลของฉันไปไกลกว่าขอบเขตบทบาทของตัวเอง", managerSees: "แสดงกรอบความคิด 3-4 ข้ออย่างสม่ำเสมอ; มีความสมดุลของบทบาทเชิงรุก; หากเกี่ยวข้อง การโค้ชมีประสิทธิผลอยู่ในระดับ Value-Adding ขึ้นไป" },
-      { stage: "กำลังพัฒนา", looksLike: "มีความคิดริเริ่ม สนับสนุนงานของผู้อื่น และเริ่มสร้างอิทธิพลนอกเหนือจากบทบาทของตนเอง", youdSay: "ฉันเริ่มรับผิดชอบมากกว่างานของตัวเองแล้ว แต่บางช่วงก็ทำได้มากกว่าช่วงอื่น", managerSees: "แสดงกรอบความคิด 2-3 ข้อ; เห็นความคิดริเริ่มบางส่วน; แต่ยังไม่สม่ำเสมอในทุกรอบการประเมิน" },
-      { stage: "เริ่มต้น", looksLike: "ทำงานของตนเองให้สำเร็จ ปฏิบัติตามคำสั่ง และมีความคิดริเริ่มนอกเหนือบทบาทของตนเองไม่มากนัก", youdSay: "ฉันมุ่งเน้นทำงานของตัวเองให้ดี", managerSees: "แสดงกรอบความคิด 1-2 ข้อ (ส่วนใหญ่เป็นด้านการบริหารจัดการ); สัญญาณตาม Mintzberg เน้นบทบาทผู้ปฏิบัติงานเป็นหลัก" },
-    ],
-    progression: "การเปลี่ยนจากระดับมั่นคง → ไปสู่ระดับเติบโตเต็มที่ มักเกิดขึ้นเมื่อหัวหน้างานตั้งใจเปิดโอกาสให้บุคคลนั้นได้นำโครงการที่ท้าทายความสามารถ",
-    confusion: "การดูแลรับผิดชอบไม่ได้จำกัดอยู่แค่ตำแหน่งหรืออำนาจที่เป็นทางการ แต่เป็นเรื่องคุณภาพของการเป็นผู้นำ ไม่ว่าจะอยู่ในบทบาทใดก็ตาม",
-    selfPrompts: [
-      "คุณสังเกตเห็นอะไรเกี่ยวกับวิธีที่คุณรับผิดชอบและสร้างอิทธิพลต่อผลลัพธ์บ้าง — ในช่วงเวลาที่คุณก้าวออกมาเป็นผู้นำ หรือในรูปแบบที่คุณตอบสนองเมื่อมีสิ่งที่ต้องมีคนนำ เหตุการณ์จริงเพียงหนึ่งเรื่องมีพลังมากกว่าการพูดถึงภาพรวมกว้าง ๆ",
-      "มีการเปลี่ยนแปลงใดหนึ่งอย่างที่คุณอยากให้เกิดขึ้นในวิธีการนำหรือสร้างอิทธิพลต่อจากนี้? เพียงเรื่องเดียวก็เพียงพอ",
-    ],
-    managerPrompts: ["คุณเห็นการเปลี่ยนแปลงอะไรเกิดขึ้นในด้านนี้ ที่เขา/เธอสามารถนำไปพัฒนาต่ออย่างตั้งใจในปีหน้า? หากนึกถึงเหตุการณ์ใดเหตุการณ์หนึ่งได้ ให้ยกมาเป็นตัวอย่าง และคุณจะสนับสนุนเขา/เธอในด้านนี้ได้อย่างไร?"],
-  },
-  a4: {
-    title: "จิตสำนึก (ระดับสากล)",
-    anchorMeaning: "ยึดหลักจาก 天人合一 (Tian Ren He Yi) — ความเป็นหนึ่งเดียวของตนเองกับองค์รวม: ขั้นที่กว้างที่สุด ซึ่งจิตสำนึกคือความรับผิดชอบที่ดำรงอยู่จริงต่อระบบที่มีชีวิต",
-    intro: "วิธีที่คุณมองเห็นผลกระทบของตนเองที่ไปเกินกว่าตัวคุณเองและงานตรงหน้า รวมถึงการตัดสินใจและการกระทำที่คำนึงถึงผลลัพธ์ระยะยาวต่อทีม องค์กร และระบบที่กว้างขึ้น",
-    stages: [
-      { stage: "เหนือกว่าตัวฉัน", looksLike: "เส้นแบ่งระหว่างตัวเองกับระบบได้หลอมรวมเป็นหนึ่ง ปัญญาที่มีก่อให้เกิดสิ่งใหม่ ๆ และผู้อื่นได้รับพลังจากการมีตัวตนของคุณอยู่", youdSay: "ฉันลงมือทำโดยไม่คำนวณว่าสิ่งนั้นจะเป็นประโยชน์ต่อตัวเองหรือไม่", managerSees: "มีการตัดสินใจหลายครั้งที่ต้องแลกด้วยผลประโยชน์ส่วนตัวเพื่อประโยชน์ของระบบโดยรวม; เพื่อนร่วมงานกล่าวถึง \"การมีตัวตน\" ของคุณ" },
-      { stage: "เป็นตัวฉันเอง", looksLike: "ตัวตนและเป้าหมายกลมกลืนเป็นหนึ่งเดียว บทบาทสะท้อนความเป็นตัวคุณ ไม่มีความขัดแย้งระหว่างตัวตนกับผลงาน", youdSay: "บทบาทของฉันสะท้อนตัวตนของฉันเอง ฉันไม่รู้สึกว่าตัวเองกับงานเป็นคนละส่วนกัน", managerSees: "บันทึกระบุว่าบทบาทและเป้าหมายเป็นหนึ่งเดียวกัน; การตัดสินใจคำนึงถึงทั้งความสอดคล้องส่วนบุคคลและผลกระทบต่อระบบ" },
-      { stage: "ผ่านตัวฉัน", looksLike: "เป็นเครื่องมือของเป้าหมายที่ใหญ่กว่า คุณมองเห็นเป้าหมายที่กว้างกว่าบทบาทของตนเอง และพิจารณาผลกระทบต่อระบบควบคู่กับผลประโยชน์ส่วนตัว", youdSay: "ฉันเห็นเป้าหมายที่ใหญ่กว่าบทบาทของตัวเอง บางครั้งฉันก็ยอมวางความต้องการส่วนตัวไว้ก่อนเพื่อเป้าหมายนั้น", managerSees: "บันทึกระบุเป้าหมายที่กว้างกว่าบทบาท; บางการตัดสินใจแสดงให้เห็นว่ายอมวางความต้องการส่วนตัวไว้ก่อน" },
-      { stage: "โดยตัวฉัน", looksLike: "ตัวเองเป็นผู้ลงมือทำ โลกตอบสนองต่อการกระทำของคุณ คุณคือต้นเหตุของผลลัพธ์ มีประสิทธิภาพและมีความมุ่งมั่นสูง", youdSay: "ฉันรับผิดชอบและลงมือทำให้สิ่งต่าง ๆ เกิดขึ้นจริง", managerSees: "บรรลุ OKR ในระดับสูง; มีความเคลื่อนไหวสูง; พบมุมมองแบบ \"ฉันเป็นคนทำให้สิ่งนี้เกิดขึ้น\"" },
-      { stage: "ต่อตัวฉัน", looksLike: "มุ่งเน้นที่ตัวเอง โลกเป็นสิ่งที่เกิดขึ้นกับคุณ และคุณตอบสนองต่อสถานการณ์ต่าง ๆ เป็นระดับพื้นฐาน ไม่ใช่ข้อบกพร่อง", youdSay: "ฉันตอบสนองต่อสิ่งที่เกิดขึ้น การมีบทบาทเป็นผู้ลงมือทำเป็นสิ่งที่ฉันกำลังฝึกฝนอยู่", managerSees: "มองสถานการณ์ว่าเป็นสิ่งจากภายนอก; มีข้อความแสดงความตระหนักรู้ แต่ยังไม่ได้แสดงมุมมองแบบผู้ลงมือทำ" },
-    ],
-    progression: "การเปลี่ยนแปลงระดับเกิดขึ้นอย่างช้า ๆ สัญญาณที่ควรดูคือการเปลี่ยนแปลงข้ามรอบการประเมิน ไม่ใช่การตัดสินจากรอบเดียว และไม่ควรคาดหวังว่าจะเปลี่ยนระดับเร็วกว่าทุก 1-2 ปี",
-    confusion: "ระดับเหล่านี้ไม่ใช่การจัดลำดับว่า \"พนักงานดี\" กับ \"พนักงานไม่ดี\" แต่ละระดับคือจุดที่มีความหมายบนเส้นทางการพัฒนาที่ยาวไกล ระดับ \"ต่อตัวฉัน\" ไม่ใช่ความล้มเหลว แต่เป็นจุดเริ่มต้นที่สำคัญ",
-    selfPrompts: [
-      "เมื่อไม่นานนี้ คุณสังเกตเห็นอะไรเกี่ยวกับวิธีที่คุณมองงานของตนเองในระบบที่กว้างขึ้นบ้าง — ในช่วงเวลาที่คุณพิจารณาผลกระทบที่กว้างกว่า หรือช่วงที่คุณสังเกตเห็นมุมมองของตัวเองเปลี่ยนไป เหตุการณ์จริงเพียงหนึ่งเรื่องมีพลังมากกว่าการพูดถึงภาพรวมกว้าง ๆ",
-      "มีการเปลี่ยนแปลงใดหนึ่งอย่างที่คุณอยากให้เกิดขึ้นในวิธีที่คุณมองภาพรวม? เพียงเรื่องเดียวก็เพียงพอ",
-    ],
-    managerPrompts: ["คุณเห็นการเปลี่ยนแปลงอะไรเกิดขึ้นในด้านนี้ ที่เขา/เธอสามารถนำไปพัฒนาต่ออย่างตั้งใจในปีหน้า? หากนึกถึงเหตุการณ์ใดเหตุการณ์หนึ่งได้ ให้ยกมาเป็นตัวอย่าง และคุณจะสนับสนุนเขา/เธอในด้านนี้ได้อย่างไร?"],
-  },
-  "b1-learning": {
-    code: "การเรียนรู้และการขัดเกลาตนเอง",
-    pillar: "ตัวบุคคล",
-    anchorEn: "对事以真 (ซื่อตรงต่องานที่ทำ) — ความน่าเชื่อถือของแบรนด์",
-    confusion: "การเรียนจบหลักสูตรอย่างเดียวไม่ใช่การเติบโต ให้พิจารณาว่าสิ่งใดในงานของคุณเปลี่ยนแปลงไปหลังจากนั้น",
-    selfLabel: "การทบทวนตนเอง",
-    selfPrompts: [
-      "นึกถึง 1-2 เหตุการณ์ที่คุณมองว่าเป็นตัวอย่างที่ชัดเจนที่สุดของการเรียนรู้ การปรับตัว หรือการเติบโตในบทบาทของคุณช่วงที่ผ่านมา: สถานการณ์/ความท้าทาย — เกิดอะไรขึ้นที่เป็นแรงผลักดัน สิ่งที่คุณทำ — การกระทำที่ใช้เสริมสร้างความสามารถ ผลลัพธ์/ผลกระทบ — สร้างความแตกต่างอย่างไร",
-      "มีเหตุการณ์เล็ก ๆ หรือรูปแบบใดที่ไม่เข้ากับหัวข้อหลักข้างต้น แต่คุณอยากให้รวมไว้ด้วยหรือไม่?",
+      "คุณมองตนเองว่ามีการพัฒนาด้านการทบทวนตนเองอยู่ในระดับใด และคุณเห็นความเปลี่ยนแปลงในตนเองอย่างไรบ้าง? จงยกตัวอย่าง ทั้งนี้มีปัจจัยใดที่จะทำให้คุณพัฒนาตนเองในด้านดังกล่าวให้ดียิ่งขึ้นต่อไป?",
     ],
     managerPrompts: [
-      "คุณเห็นเขา/เธอขัดเกลาตนเองอย่างจริงจังในเรื่องใดบ้าง ที่แสดงถึงความตระหนักรู้ การเรียนรู้ การปรับตัว หรือความเป็นผู้ใหญ่?",
-      "มีคุณสมบัติ ความสามารถ หรือพฤติกรรมด้านการดูแลรับผิดชอบใดบ้างที่เริ่มปรากฏอย่างสม่ำเสมอมากขึ้น?",
-      "การเติบโตของเขา/เธอส่งผลต่อวิธีการทำงาน การปฏิสัมพันธ์กับผู้อื่น หรือการดูแลความรับผิดชอบอย่างไร?",
+      "คุณมองเห็นความเปลี่ยนแปลงอะไรด้านการทบทวนตนเองของพนักงาน? จงยกตัวอย่าง",
+      "คุณมองว่าพนักงานจะสามารถต่อยอดด้านดังกล่าวให้ดียิ่งขึ้นได้ในปีถัดไปได้อย่างไร? และในฐานะหัวหน้างาน คุณจะสามารถสนับสนุนพนักงานได้ในมุมใด?",
+    ],
+  },
+  a2: {
+    title: "ด้านบทบาทและความสัมพันธ์กับเพื่อนร่วมงาน (Role & Relationship – Team Level)",
+    anchorMeaning: "การมีส่วนร่วมของพนักงานทุกคนนำไปสู่ความร่วมมือในการทำงานร่วมกันอย่างราบรื่น",
+    intro: "มุมมองการสร้างความสัมพันธ์ในที่ทำงาน รวมถึงการทำงานกับเพื่อนร่วมงาน",
+    stages: [
+      { stage: "ก้าวหน้าอย่างมั่นคง (Mature)", looksLike: "ความสัมพันธ์กับเพื่อนร่วมงานมั่นคงมาก และสามารถเป็นแบบอย่างแก่ผู้อื่นได้", youdSay: "คนอื่นมักถามฉันว่าทำอย่างไรถึงจะสร้างความเชื่อมั่นระหว่างทีมตนเองกับทีมอื่นได้", managerSees: "มีปฏิสัมพันธ์กับเพื่อนร่วมงานในทางที่ดีมาก ทั้งภายในทีมและกับนอกทีม และแนวคิดจากเพื่อนร่วมงานทีมอื่นยังสอดคล้องกับแนวคิดของทีมตนเอง" },
+      { stage: "พัฒนามั่นคง (Established)", looksLike: "ความสัมพันธ์กับเพื่อนร่วมงานค่อนข้างมั่นคง ต่างคนต่างปฏิบัติต่อกันอย่างถ้อยทีถ้อยอาศัย", youdSay: "ฉันมีความสัมพันธ์กับเพื่อนร่วมงานแทบทุกทีมที่เกี่ยวข้อง และให้ความสำคัญในการรักษาความสัมพันธ์เหล่านั้น", managerSees: "มีปฏิสัมพันธ์กับเพื่อนร่วมงานค่อนข้างสมดุล ทั้งภายในทีม และกับนอกทีม" },
+      { stage: "กำลังพัฒนา (Developing)", looksLike: "มีความสัมพันธ์ที่ดีภายในทีม เริ่มมีความสัมพันธ์กับเพื่อนร่วมงานในทีมอื่น", youdSay: "ความสัมพันธ์กับเพื่อนร่วมงานส่วนใหญ่ของฉันยังอยู่ในทีมตนเอง แต่ฉันกำลังพยายามสร้างความสัมพันธ์กับทีมอื่นด้วย", managerSees: "มีปฏิสัมพันธ์กับเพื่อนร่วมงานภายในทีมค่อนข้างดี และเริ่มมีปฏิสัมพันธ์ที่ดีเพิ่มขึ้นกับเพื่อนร่วมงานนอกทีม" },
+      { stage: "อยู่ในขั้นเริ่มต้น (Emerging)", looksLike: "มุ่งเน้นเฉพาะบทบาทของตนเอง มีความสัมพันธ์ข้ามทีมจำกัด", youdSay: "ฉันโฟกัสกับผลงานของตนเอง และเพื่อนร่วมงานในทีมของฉันเท่านั้น", managerSees: "มีปฏิสัมพันธ์กับเพื่อนร่วมงานอื่นนอกเหนือจากทีมของตนเองค่อนข้างน้อย" },
+    ],
+    confusion: "การรู้จักผู้คนจำนวนมากไม่ได้หมายความว่าคุณมีความสัมพันธ์ที่มั่นคงเสมอไป การพัฒนาในด้านบทบาทและความสัมพันธ์กับเพื่อนร่วมงานนั้นลงลึกไปถึงความไว้วางใจซึ่งกันและกัน เพื่อนำไปสู่การทำงานร่วมกันอย่างเกื้อกูล",
+    selfPrompts: [
+      "คุณมองตนเองว่ามีการพัฒนาด้านบทบาทและความสัมพันธ์กับเพื่อนร่วมงานอยู่ในระดับใด และคุณเห็นความเปลี่ยนแปลงในตนเองอย่างไรบ้าง? จงยกตัวอย่าง ทั้งนี้มีปัจจัยใดที่จะทำให้คุณพัฒนาตนเองในด้านดังกล่าวให้ดียิ่งขึ้นต่อไป?",
+    ],
+    managerPrompts: [
+      "คุณมองเห็นความเปลี่ยนแปลงอะไรด้านบทบาทและความสัมพันธ์กับเพื่อนร่วมงานของพนักงาน? จงยกตัวอย่าง",
+      "คุณมองว่าพนักงานจะสามารถต่อยอดด้านดังกล่าวให้ดียิ่งขึ้นได้ในปีถัดไปได้อย่างไร? และในฐานะหัวหน้างาน คุณจะสามารถสนับสนุนพนักงานได้ในมุมใด?",
+    ],
+  },
+  a3: {
+    title: "ด้านความรับผิดชอบและการมีส่วนร่วมต่อองค์กร (Stewardship – Organizational Level)",
+    anchorMeaning: "ภาวะความเป็นผู้นำเพื่อประโยชน์ส่วนรวม และความเป็นอยู่ที่ดีของทุกคนที่ไว้วางใจในตัวคุณ",
+    intro: "ความรับผิดชอบต่องานที่ได้รับมอบหมายและผลลัพธ์ รวมถึงภาวะการเป็นผู้นำ ให้คำแนะนำ และสนับสนุนผู้อื่น ไม่ว่าคุณจะเป็นหัวหน้างานหรือไม่ก็ตาม",
+    stages: [
+      { stage: "ก้าวหน้าอย่างมั่นคง (Mature)", looksLike: "สร้างสภาพแวดล้อมที่เอื้อให้ผู้อื่นก้าวขึ้นเป็นผู้นำ และมีความสามารถในการบ่มเพาะผู้นำรุ่นใหม่", youdSay: "ฉันมองว่าบทบาทของฉันคือการสร้างผู้นำรุ่นใหม่ๆต่อไป ไม่ใช่แค่เฉพาะผู้นำในงานปัจจุบันเท่านั้น", managerSees: "มีแนวคิดความรับผิดชอบ มีการแสดงบทบาทผู้นำเชิงรุกชัดเจน และมีการพัฒนาพนักงานเพื่อนร่วมงานอื่นเพื่อให้แสดงศักยภาพของความเป็นผู้นำอย่างเป็นรูปธรรม" },
+      { stage: "พัฒนามั่นคง (Established)", looksLike: "แสดงความเป็นผู้นำแม้ไม่มีตำแหน่งอย่างเป็นทางการ ผ่านแนวคิดริเริ่มต่างๆ และสามารถสร้างแรงบันดาลใจในการทำงานให้กับผู้อื่นได้", youdSay: "ฉันมีแนวคิดริเริ่มงานต่างๆอยู่เสมอ และแนวคิดของฉันสามารถต่อยอดไปไกลได้เกินกว่าบทบาทที่ตนเองได้รับมอบหมาย", managerSees: "มีแนวคิดความรับผิดชอบ มีการแสดงความคิดริเริ่มด้วยตนเองอย่างสม่ำเสมอ และเริ่มแสดงบทบาทผู้นำเชิงรุก" },
+      { stage: "กำลังพัฒนา (Developing)", looksLike: "มีความคิดริเริ่มในงานต่างๆ รวมถึงให้การสนับสนุน ผู้อื่นเริ่มมองคุณเป็นแรงบันดาลใจในการทำงาน", youdSay: "ฉันมีแนวคิดริเริ่มงานต่างๆที่นอกเหนือจากบทบาทที่ได้รับมอบหมายของตนเอง แม้ว่าอาจจะทำได้มากหรือน้อยต่างกันในแต่ละช่วงเวลา", managerSees: "มีแนวคิดความรับผิดชอบ มีการแสดงความคิดริเริ่มด้วยตนเองบางอย่างแต่ยังไม่สม่ำเสมอ" },
+      { stage: "อยู่ในขั้นเริ่มต้น (Emerging)", looksLike: "มุ่งมั่นทำงานของตนเองให้สำเร็จ ปฏิบัติตามคำสั่ง อาจยังไม่มีความคิดริเริ่มในงานใหม่ๆ", youdSay: "ฉันโฟกัสกับการทำงานของตนเองให้สำเร็จและมีคุณภาพ", managerSees: "มีแนวคิดความรับผิดชอบ แต่เน้นบทบาทผู้รับคำสั่งเป็นหลัก" },
+    ],
+    confusion: "ความรับผิดชอบไม่ได้ถูกจำกัดอยู่เพียงตำแหน่งหัวหน้างานเท่านั้น แต่สะท้อนจากคุณภาพของการเป็นผู้นำไม่ว่าพนักงานจะอยู่ในบทบาทใดก็ตาม การพัฒนาในด้านนี้มักเกิดขึ้นเมื่อหัวหน้างานเปิดโอกาสให้พนักงานแสดงความคิดเห็น หรือรับผิดชอบงานต่างๆที่ท้าทายมากยิ่งขึ้น",
+    selfPrompts: [
+      "คุณมองว่าตนเองมีการพัฒนาตนเองด้านความรับผิดชอบและการมีส่วนร่วมกับองค์กรอยู่ในระดับใด และคุณเห็นความเปลี่ยนแปลงในตนเองอย่างไรบ้าง? จงยกตัวอย่าง ทั้งนี้มีปัจจัยใดที่จะทำให้คุณพัฒนาตนเองในด้านดังกล่าวให้ดียิ่งขึ้นต่อไป?",
+    ],
+    managerPrompts: [
+      "คุณมองเห็นความเปลี่ยนแปลงอะไรด้านความรับผิดชอบและการมีส่วนร่วมกับองค์กรของพนักงาน? จงยกตัวอย่าง",
+      "คุณมองว่าพนักงานจะสามารถต่อยอดด้านดังกล่าวให้ดียิ่งขึ้นได้ในปีถัดไปได้อย่างไร? และในฐานะหัวหน้างาน คุณจะสามารถสนับสนุนพนักงานได้ในมุมใด?",
+    ],
+  },
+  a4: {
+    title: "ด้านจิตใต้สำนึกต่อส่วนรวม (Consciousness – Universe Level)",
+    anchorMeaning: "จิตใต้สำนึกรับผิดชอบต่อตนเองและส่วนรวม",
+    intro: "มุมมองการตัดสินใจและการกระทำที่คำนึงถึงผลกระทบที่อาจเกิดขึ้นต่อตนเอง ผู้คน งานที่ได้รับมอบหมาย รวมถึงองค์กรในภาพรวม",
+    stages: [
+      { stage: "ก้าวข้ามผ่านตัวฉัน (Beyond Me)", looksLike: "ตัวตนและเป้าหมายเป็นอันหนึ่งอันเดียวกัน มีความสามารถในการสร้างสรรค์สิ่งใหม่ๆ เพื่อประโยชน์ส่วนรวม", youdSay: "ฉันลงมือทำโดยไม่ต้องมานั่งชั่งใจว่าสิ่งที่เป็นประโยชน์ต่อตนเองหรือไม่", managerSees: "ยอมเสียสละผลประโยชน์ส่วนตน เพื่อรักษาประโยชน์ส่วนรวมเป็นหลัก" },
+      { stage: "เป็นตัวฉัน (As Me)", looksLike: "ตัวตนและเป้าหมายสอดประสานกัน บทบาทที่ได้รับมอบหมายสะท้อนความเป็นตนเอง", youdSay: "บทบาทของฉันสะท้อนตัวตนของฉัน และฉันไม่รู้สึกว่าตนเองกับงานเป็นคนละส่วนกัน", managerSees: "เป้าหมายที่ตั้งไว้และบทบาทที่ได้รับเป็นหนึ่งเดียวกัน มีการคำนึงถึงทั้งความต้องการส่วนตัวและส่วนรวม" },
+      { stage: "ผ่านตัวฉัน (Through Me)", looksLike: "มองเห็นเป้าหมายที่กว้างกว่าบทบาทของตนเอง และพิจารณาผลกระทบต่อส่วนรวมควบคู่กับผลประโยชน์ส่วนตัว", youdSay: "ฉันมองเห็นเป้าหมายที่ยิ่งใหญ่กว่าบทบาทที่ได้รับมอบหมาย บางครั้งฉันยอมวางความต้องการส่วนตนไว้ เพื่อให้บรรลุเป้าหมายส่วนรวม", managerSees: "เป้าหมายที่ตั้งไว้กว้างกว่าบทบาทที่ได้รับมอบหมาย มีการตัดสินใจบางครั้งที่แสดงให้เห็นว่ายอมวางความต้องการส่วนตัวไว้เพื่อเดินหน้าไปกับส่วนรวม" },
+      { stage: "ด้วยตัวฉัน (By Me)", looksLike: "มองเห็นตนเองเป็นผู้สร้างการเปลี่ยนแปลง มีประสิทธิภาพ และมีความมุ่งมั่นในการลงมือทำสูง", youdSay: "ฉันเป็นผู้รับผิดชอบงานที่ได้รับมอบหมาย และลงมือทำให้งานเหล่านั้นสำเร็จและเกิดขึ้นจริง", managerSees: "บรรลุเป้าหมาย (OKRs) ได้ดี มีการอัปเดตความคืบหน้าของผลงาน และเป็นผู้ลงมือทำให้งานสำเร็จ" },
+      { stage: "ต่อตัวฉัน (To Me)", looksLike: "มุ่งเน้นและให้ความสนใจบทบาทของตนเองเป็นหลัก มีความรับผิดชอบต่อสถานการณ์ต่างๆ ในระดับพื้นฐาน", youdSay: "ฉันแสดงความรับผิดชอบต่องานที่ได้รับมอบหมาย และกำลังฝึกบทบาทการเป็นผู้ลงมือทำอยู่", managerSees: "มองสถานการณ์ต่างๆ ว่าเป็นปัจจัยภายนอก มีความตระหนักรู้ แต่ยังไม่ได้มองตนเองเป็นผู้สร้างความเปลี่ยนแปลง" },
+    ],
+    confusion: "การเปลี่ยนแปลงในด้านจิตใต้สำนึกของตนเองต่อส่วนรวมนั้นควรถูกพัฒนาอย่างค่อยเป็นค่อยไป ทั้งนี้ระดับทั้ง 5 ระดับข้างต้น ไม่ใช่เป็นการประเมินว่าบุคคลใดบุคคลหนึ่งเป็นพนักงานที่ดีหรือไม่ อย่างไร เพียงแต่เป็นส่วนหนึ่งในเส้นทางการพัฒนาตนเองของพนักงาน",
+    selfPrompts: [
+      "คุณมองเห็นตนเองด้านจิตใต้สำนึกของตนเองต่อส่วนรวมอยู่ในระดับใด หรือมีเหตุการณ์ใดในการทำงานที่ทำให้คุณเห็นมุมมองของตนเองที่เปลี่ยนไป? จงยกตัวอย่าง ทั้งนี้มีเรื่องใดที่คุณต้องการพัฒนาเพื่อให้เป็นประโยชน์ต่อส่วนรวมได้ดียิ่งขึ้นบ้าง?",
+    ],
+    managerPrompts: [
+      "คุณมองเห็นความเปลี่ยนแปลงอะไรด้านจิตใต้สำนึกของตนเองต่อส่วนรวมของพนักงาน? จงยกตัวอย่าง",
+      "คุณมองว่าพนักงานจะสามารถต่อยอดด้านดังกล่าวให้ดียิ่งขึ้นได้ในปีถัดไปได้อย่างไร? และในฐานะหัวหน้างาน คุณจะสามารถสนับสนุนพนักงานได้ในมุมใด?",
+    ],
+  },
+  "b1-learning": {
+    code: "ด้านการเรียนรู้และพัฒนาตนเอง (Learning & Self-cultivation)",
+    pillar: "ตัวบุคคล",
+    anchorEn: "ความสามารถในการเรียนรู้ ปรับตัวจากความล้มเหลว และมีส่วนร่วมในการสร้างวัฒนธรรมการเรียนรู้ภายในองค์กร",
+    selfLabel: "โดยพนักงาน",
+    selfPrompts: [
+      "จงยกตัวอย่างเหตุการณ์ที่สะท้อนให้เห็นถึงการเรียนรู้ การปรับตัว หรือการเติบโตในบทบาทที่ได้รับมอบหมายในช่วงที่ผ่านมา โดยระบุ",
+    ],
+    managerPrompts: [
+      "คุณเห็นการพัฒนาการที่สะท้อนถึงการตระหนักรู้ เรียนรู้ และการปรับตัวของพนักงาน หรือไม่ อย่างไร?",
+      "คุณมองว่าเหตุการณ์ดังกล่าว ส่งผลต่อวิธีการทำงานของพนักงานในทางที่ดีขึ้นอย่างไร?",
     ],
   },
   "b1-integrity": {
-    code: "การบริหารด้วยความซื่อตรง (管以真)",
+    code: "ด้านการบริหารงานด้วยความซื่อตรง (Manage with Integrity)",
     pillar: "ตัวบุคคล (สำหรับหัวหน้างาน)",
-    anchorEn: "对事以真 (ซื่อตรงต่องานที่ทำ) — ความน่าเชื่อถือของแบรนด์",
-    confusion: "การบริหารด้วยความซื่อตรงเน้นที่ \"วิธีการ\" บริหาร ไม่ใช่ \"ผลงาน\" ที่ส่งมอบได้",
-    selfLabel: "การทบทวนตนเอง",
+    anchorEn: "ความซื่อตรงในการบริหารงานมักเริ่มจากความซื่อสัตย์และจริงใจ ต่อภารกิจขององค์กร ต่อเพื่อนร่วมงาน และต่อตัวของคุณเอง",
+    selfLabel: "โดยพนักงาน",
     selfPrompts: [
-      "นึกถึง 1-2 เหตุการณ์ที่แสดงความซื่อตรงในการดูแลบุคคล การตัดสินใจ และทรัพยากร: สถานการณ์/ความท้าทาย — ความจริง ความตึงเครียด หรือการแลกเปลี่ยนใด สิ่งที่คุณทำ — วิธีสร้างความชัดเจนหรือความรับผิดชอบ ผลลัพธ์/ผลกระทบ — ส่งผลต่อบุคคลหรือผลลัพธ์อย่างไร",
-      "มีเหตุการณ์เล็ก ๆ หรือรูปแบบใดที่ไม่เข้ากับหัวข้อหลักข้างต้น แต่คุณอยากให้รวมไว้ด้วยหรือไม่?",
+      "จงยกตัวอย่างเหตุการณ์ที่สะท้อนให้เห็นว่าคุณบริหารจัดการทีม และตัดสินใจภายใต้ความซื่อตรงและจริงใจ โดยระบุ",
     ],
     managerPrompts: [
-      "คุณเคยเห็นเขา/เธอแสดงความสัตย์จริง ความกล้าหาญ และความรับผิดชอบในสถานการณ์ใดบ้าง? เขา/เธอนำเสนอประเด็นที่ยากลำบากและช่วยสร้างความเข้าใจที่ตรงกันอย่างจริงใจได้อย่างไร?",
-      "อะไรจะช่วยให้เขา/เธอมีความซื่อตรงในการบริหารที่ลึกซึ้งยิ่งขึ้น?",
+      "คุณเห็นการพัฒนาการที่สะท้อนถึงความซื่อตรงและยึดมั่นในความถูกต้องของพนักงาน หรือไม่ อย่างไร?",
+      "คุณมองว่าเหตุการณ์ดังกล่าว ส่งผลต่อวิธีการทำงานของพนักงานในทางที่ดีขึ้นอย่างไร?",
     ],
   },
   "b1-coaching": {
-    code: "การบริหารผ่านการโค้ช (管以慈)",
+    code: "ด้านการบริหารงานด้วยการให้คำแนะนำ (Manage with Coaching)",
     pillar: "ตัวบุคคล (สำหรับหัวหน้างาน)",
-    anchorEn: "对下以慈 (เมตตาต่อผู้ใต้บังคับบัญชา) — การดูแลรับผิดชอบ",
-    confusion: "จำนวนครั้งของการโค้ชไม่ได้เท่ากับการพัฒนาที่แท้จริง",
-    selfLabel: "การทบทวนตนเอง",
+    anchorEn: "การพัฒนาผู้อื่นผ่านการตั้งคำถาม การให้คำแนะนำ เป็นที่ปรึกษา และการเปิดโอกาสให้ผู้อื่นเติบโต",
+    selfLabel: "โดยพนักงาน",
     selfPrompts: [
-      "นึกถึง 1-2 เหตุการณ์ที่คุณตั้งใจลงทุนเพื่อการเติบโตของทีม: บุคคลและสถานการณ์การเติบโตของเขา/เธอ การโค้ชและคำถามที่คุณใช้ และสิ่งที่เปลี่ยนไปสำหรับคนคนนั้น",
-      "คุณช่วยให้ผู้อื่นมีความสามารถและพึ่งพาตนเองมากขึ้นได้อย่างไร? คุณมอบความไว้วางใจให้ผู้อื่นรับผิดชอบงานที่มีความหมายอย่างไร?",
+      "จงยกตัวอย่างเหตุการณ์ที่สะท้อนให้เห็นว่าคุณให้ความสำคัญกับการพัฒนาคน ผ่านการให้คำปรึกษาหรือคำแนะนำ โดยระบุ",
     ],
     managerPrompts: [
-      "มีหลักฐานใดบ้างที่บ่งชี้ว่าทีมของเขา/เธอแข็งแรงขึ้น มีความสามารถมากขึ้น หรือพึ่งพาตนเองได้มากขึ้น?",
-      "อะไรจะช่วยให้เขา/เธอพัฒนาผู้คนได้อย่างมีประสิทธิผลมากขึ้น?",
+      "คุณเห็นการพัฒนาการที่สะท้อนถึงความสามารถในการเติบโตในบทบาทหัวหน้างานของพนักงาน หรือไม่ อย่างไร?",
+      "คุณมองว่าเหตุการณ์ดังกล่าว ส่งผลต่อวิธีการทำงานของพนักงานในทางที่ดีขึ้นอย่างไร?",
     ],
   },
   "b1-connection": {
-    code: "การบริหารด้วยความผูกพัน (管以和)",
+    code: "ด้านการบริหารด้วยความผูกพัน (Manage with Connection)",
     pillar: "ตัวบุคคล (สำหรับหัวหน้างาน)",
-    anchorEn: "对人以和 (ความกลมเกลียวกับผู้อื่น) — ความเป็นหนึ่งเดียว",
-    confusion: "การดูจากกิจกรรมสังสรรค์เพียงอย่างเดียวไม่ใช่ตัวชี้วัดที่ตรงของการบริหารด้วยความผูกพัน ให้พิจารณาสัญญาณความเป็นอยู่ที่ดีอย่างต่อเนื่อง",
-    selfLabel: "การทบทวนตนเอง",
+    anchorEn: "การสร้างความสัมพันธ์ที่จริงใจ และดูแลความเป็นอยู่ที่ดี รวมถึงการส่งเสริมวัฒนธรรมการทำงานร่วมกันภายในทีม",
+    selfLabel: "โดยพนักงาน",
     selfPrompts: [
-      "นึกถึง 1-2 เหตุการณ์ที่เสริมสร้างความกลมเกลียว ความผูกพัน และความเข้าใจร่วมกันของทีม: ความสัมพันธ์หรือความตึงเครียดที่ต้องดูแล สิ่งที่คุณทำ และสิ่งที่เปลี่ยนไป",
-      "คุณเสริมสร้างความรู้สึกเป็น \"พวกเรา\" ภายในทีมหรือองค์กรได้อย่างไร?",
+      "จงยกตัวอย่างเหตุการณ์ที่สะท้อนให้เห็นว่าคุณเสริมสร้างความผูกพัน และความเป็นอันหนึ่งอันเดียวกันภายในทีม โดยระบุ",
     ],
     managerPrompts: [
-      "เขา/เธอนำผู้คนมารวมกันรอบเป้าหมายร่วมกันได้อย่างไร?",
-      "อะไรจะช่วยให้เขา/เธอมีความสามารถในการรวมผู้คนและมุมมองที่หลากหลายได้ลึกซึ้งยิ่งขึ้น?",
+      "คุณเห็นการพัฒนาการที่สะท้อนถึงการสร้างความกลมเกลียวภายในทีมของพนักงาน หรือไม่ อย่างไร?",
+      "คุณมองว่าเหตุการณ์ดังกล่าว ส่งผลต่อวิธีการทำงานของพนักงานในทางที่ดีขึ้นอย่างไร?",
     ],
   },
   "b2-collab": {
-    code: "การร่วมมือและความเป็นหุ้นส่วน",
+    code: "ด้านความร่วมมือในการทำงาน (Collaboration & Partnership)",
     pillar: "แนวทางการทำงานและการปรากฏตัว",
-    anchorEn: "对人以和 (ความกลมเกลียวกับผู้อื่น) — ความเป็นหนึ่งเดียว",
-    confusion: "การเป็นที่ชื่นชอบหรือความนิยมไม่ได้บ่งบอกถึงการร่วมมือและความเป็นหุ้นส่วนที่ดี",
-    selfLabel: "การทบทวนตนเอง",
+    anchorEn: "การสนับสนุนความสำเร็จของผู้อื่น การสร้างความสัมพันธ์อันดี และการมีส่วนร่วมนอกเหนือจากเพื่อนร่วมงานของตนเอง",
+    selfLabel: "โดยพนักงาน",
     selfPrompts: [
-      "นึกถึง 1-2 เหตุการณ์ของการสนับสนุนผู้อื่น และ/หรือร่วมสร้างผลลัพธ์ที่ไม่สามารถเกิดขึ้นได้หากทำเพียงคนเดียว: สถานการณ์ที่จำเป็นต้องทำงานร่วมกัน สิ่งที่คุณทำและทำงานร่วมกับใคร และผลลัพธ์ร่วมที่เกิดขึ้น",
-      "มีเหตุการณ์เล็ก ๆ หรือรูปแบบใดที่ไม่เข้ากับหัวข้อหลักข้างต้น แต่คุณอยากให้รวมไว้ด้วยหรือไม่?",
+      "จงยกตัวอย่างเหตุการณ์ที่สะท้อนให้เห็นว่าคุณสนับสนุนการทำงานของเพื่อนร่วมงาน โดยเฉพาะอย่างยิ่งกับเพื่อนร่วมงานทีมอื่น จนสำเร็จลุล่วงไปได้ด้วยดี โดยระบุ",
     ],
     managerPrompts: [
-      "เขา/เธอสร้างความเป็นหุ้นส่วนและร่วมมือข้ามขอบเขตได้อย่างมีประสิทธิผลเพียงใด?",
-      "เขา/เธอสร้างความสมดุลระหว่างผลประโยชน์ของตนเองกับผลประโยชน์ขององค์กรที่กว้างขึ้นได้อย่างไร?",
+      "คุณเห็นการพัฒนาการที่สะท้อนถึงการร่วมมือร่วมใจระหว่างพนักงานกับเพื่อนร่วมงานอื่น หรือไม่ อย่างไร?",
+      "คุณมองว่าเหตุการณ์ดังกล่าว ส่งผลต่อวิธีการทำงานของพนักงานในทางที่ดีขึ้นอย่างไร?",
     ],
   },
   "b2-steward": {
-    code: "การดูแลรับผิดชอบและความรับผิดรับชอบ",
+    code: "ด้านภาวะความเป็นผู้นำและรับผิดชอบต่อผลลัพธ์ (Stewardship & Accountability)",
     pillar: "แนวทางการทำงานและการปรากฏตัว",
-    anchorEn: "对上以敬 (เคารพผู้นำ รวมถึงการท้วงติงอย่างมีข้อมูล) — การดูแลรับผิดชอบ",
-    confusion: "การปฏิบัติตามคำสั่งเพียงอย่างเดียวไม่ได้เท่ากับการดูแลรับผิดชอบที่ดี สิ่งที่สร้างผลกระทบเชิงบวกอย่างยั่งยืนคือการท้วงติงอย่างสร้างสรรค์ที่นำไปสู่ผลลัพธ์ที่ดีขึ้น",
-    selfLabel: "การทบทวนตนเอง",
+    anchorEn: "ค่านิยม การแสดงความรับผิดชอบ รวมถึงการตั้งคำถามอย่างสร้างสรรค์เพื่อให้ได้ผลลัพธ์ที่ดียิ่งขึ้น",
+    selfLabel: "โดยพนักงาน",
     selfPrompts: [
-      "นึกถึง 1-2 เหตุการณ์ของการรักษาความรับผิดรับชอบ หรือการดูแลทรัพยากรที่ได้รับความไว้วางใจ: ภาระหน้าที่หรือทรัพยากรใด การแลกเปลี่ยนหรือการตัดสินใจที่ต้องทำ และผลลัพธ์ที่เกิดขึ้น",
-      "คุณเคยแสดงความเห็นที่แท้จริงหรือไม่ — รวมถึงข้อสงสัย ความไม่เห็นด้วย หรือความจริงที่ไม่สบายใจ — แม้ว่าการเงียบไว้จะง่ายกว่า? ผลที่เกิดขึ้นเป็นอย่างไร?",
+      "จงยกตัวอย่างเหตุการณ์ที่สะท้อนให้เห็นว่าคุณมีความรับผิดชอบ แสดงความเห็น และลงมือปฏิบัติงานที่ได้รับมอบหมายได้อย่างดีเยี่ยม โดยระบุ",
     ],
-    managerPrompts: ["คุณเคยเห็นเขา/เธอแสดงความเห็นที่แท้จริง — รวมถึงข้อสงสัยหรือความไม่เห็นด้วย — แทนที่จะตอบในสิ่งที่คาดว่าคนอื่นอยากได้ยินหรือไม่? เขา/เธอทำอย่างไร และต้องแลกด้วยอะไรบ้างหากมี?"],
+    managerPrompts: ["พนักงานมีส่วนในการแสดงความคิดเห็น การเสนอความคิดสร้างสรรค์ในการทำงานหรือไม่ อย่างไร?"],
   },
   "b2-innovation": {
-    code: "นวัตกรรมและความเป็นผู้ประกอบการ",
+    code: "ด้านนวัตกรรม และความเป็นผู้ประกอบการ (Innovation & Entrepreneurship)",
     pillar: "แนวทางการทำงานและการปรากฏตัว",
-    anchorEn: "对生命增值 (สร้างมูลค่าเพิ่มให้กับชีวิต) — ความเป็นผู้ประกอบการ",
-    confusion: "การมีความคิดจำนวนมากโดยไม่มีการลงมือทำต่อ ไม่ใช่นวัตกรรม ให้พิจารณาผลลัพธ์ที่องค์กรนำไปใช้จริง",
-    selfLabel: "การทบทวนตนเอง",
+    anchorEn: "สร้างสรรค์สิ่งใหม่ ปรับตัวต่อการเปลี่ยนแปลง และการเปลี่ยนความคิดเชิงรูปธรรมให้เป็นผลลัพธ์ที่สามารถปฏิบัติได้จริง",
+    selfLabel: "โดยพนักงาน",
     selfPrompts: [
-      "นึกถึง 1-2 เหตุการณ์ของการปรับปรุง ท้าทาย หรือสร้างสิ่งใหม่ที่ช่วยเสริมความแข็งแรงของระบบ: โอกาส ปัญหา หรือความต้องการที่ยังไม่ได้รับการตอบสนอง สิ่งที่คุณทำ และผลลัพธ์ที่เกิดขึ้น",
-      "คุณได้ทำอะไรเพื่อพัฒนาสิ่งที่จะเกิดในอนาคต ไม่ใช่เพียงแก้ปัญหาเฉพาะหน้า?",
+      "จงยกตัวอย่างเหตุการณ์ที่สะท้อนให้เห็นว่าคุณมีแนวคิดในการสร้างสรรค์สิ่งใหม่เพื่อประโยชน์ต่อส่วนรวม โดยระบุ",
     ],
-    managerPrompts: [
-      "มีหลักฐานใดบ้างที่บ่งชี้ว่าเขา/เธอสร้างมูลค่าที่ยังคงอยู่ต่อไปแม้ไม่ได้เข้าไปเกี่ยวข้องโดยตรงแล้ว?",
-      "เขา/เธอสร้างความสมดุลระหว่างนวัตกรรมกับการดูแลรับผิดชอบได้อย่างไร?",
+    managerPrompts: ["พนักงานมีการสร้างสรรค์สิ่งใหม่นอกเหนือจากงานที่ได้รับมอบหมายหรือไม่ อย่างไร?"],
+  },
+  b3: {
+    code: "การส่งมอบผลงานให้บรรลุเป้าหมายและมีความหมายต่อส่วนรวม (Delivering Results & Impact)",
+    pillar: "ผลการปฏิบัติงาน",
+    anchor: "คุณค่า และผลกระทบที่มีความหมายจากผลงานของพนักงานภายใต้บทบาทที่ได้รับมอบหมาย",
+    selfLabel: "โดยพนักงาน",
+    selfPrompts: [
+      "จงยกตัวอย่างเหตุการณ์ที่สะท้อนให้เห็นถึงคุณค่าและผลกระทบที่มีความหมายจากผลงานที่คุณนำเสนอ หรือทำสำเร็จ โดยระบุสถานการณ์ ความคิดเห็น สิ่งที่คุณลงมือปฏิบัติ และสิ่งที่เกิดขึ้น",
     ],
+    managerPrompts: ["จากผลงานของพนักงาน คุณมองว่าผลงานดังกล่าวเป็นประโยชน์ต่อส่วนรวมหรือไม่ อย่างไร?"],
   },
   b4: {
-    selfOther: "[ตนเอง] ข้อคิดเห็นเพิ่มเติมอื่น ๆ",
-    managerOther: "[หัวหน้างาน] ความเห็นเพิ่มเติมอื่น ๆ",
-    selfSnapshotLabel: "ภาพรวมการสร้างมูลค่าเพิ่ม — มุมมองของคุณเอง",
-    managerSnapshotLabel: "ภาพรวมการสร้างมูลค่าเพิ่ม — มุมมองของหัวหน้างาน (เป็นค่าสุดท้าย)",
+    selfOther: "ความคิดเห็นเพิ่มเติมต่อตนเอง",
+    managerOther: "ข้อเสนอแนะ ความคิดเห็นเพิ่มเติมต่อพนักงาน",
+    selfSnapshotLabel: "จากการประเมินตนเอง คุณมองว่าคุณอยู่ในระดับ",
+    managerSnapshotLabel: "ในฐานะหัวหน้างาน คุณมองว่าพนักงานอยู่ในระดับ",
     waitingSnapshot: "รอการประเมินขั้นสุดท้ายจากหัวหน้างาน",
   },
 };
 
 const A5_TH = {
-  title: "แผนการเติบโต",
-  ownedByYou: "ส่วนนี้เป็นของคุณ หัวหน้างานสามารถแสดงความเห็นได้หลังจากคุณยืนยันแล้ว แต่ไม่สามารถแก้ไขเนื้อหาได้",
-  mobilityLabel: "ความพร้อมในการย้ายสถานที่ทำงาน",
-  mobilityDetailLabel: "ถ้าตอบว่าพร้อม ระบุประเทศ / เงื่อนไข",
-  dimensionLabel: "ด้านที่ต้องการมุ่งเน้น — เลือกเพียง 1 ข้อ",
-  edgeLabel: "จุดที่ท้าทายให้เติบโต",
-  edgeHint: "ตอบเป็นหนึ่งประโยค พฤติกรรม ความสามารถ หรือวิธีการแสดงตัวแบบใดที่กำลังชักชวนให้คุณเติบโตในช่วงนี้ และทำไมถึงเลือกข้อนี้?",
-  expLabel: "วิธีที่คุณจะเติบโต — ผ่านประสบการณ์จริง",
-  expHint: "งานที่ท้าทายความสามารถ โครงการข้ามสายงาน หรือการเป็นผู้นำสิ่งใหม่ ๆ ระบุชื่อประสบการณ์ สิ่งที่ตั้งใจจะพัฒนา และช่วงเวลาโดยประมาณ",
-  learnLabel: "วิธีที่คุณจะเติบโต — ผ่านการเรียนรู้",
-  learnHint: "การโค้ช การให้คำปรึกษา การเรียนรู้จากเพื่อนร่วมงาน หรือหลักสูตรต่าง ๆ ระบุชื่อโปรแกรม ทักษะที่ตั้งใจจะพัฒนา และช่วงเวลาโดยประมาณ",
-  supportLabel: "การสนับสนุนที่คุณต้องการจากหัวหน้างาน",
-  supportHint: "มีสิ่งใดที่หัวหน้างานควรทำ พูด หรือหยุดทำ ที่จะช่วยให้คุณทำตามแผนนี้ได้ดีที่สุด? คุณจะรู้ได้อย่างไรว่าคุณเติบโตขึ้นแล้ว?",
-  managerLabel: "มุมมองของหัวหน้างาน (หลังจากพนักงานยืนยันแล้ว พนักงานดูได้อย่างเดียว ไม่สามารถแก้ไข)",
-  managerHint: "แผนนี้จะสามารถต่อยอดจากจุดแข็งที่เขา/เธอมีอยู่แล้วได้อย่างไร? เล่าถึงช่วงเวลาที่คุณเคยเห็นจุดแข็งนั้นปรากฏออกมา และคุณจะสนับสนุนเขา/เธอในแนวทางการเติบโตนี้ได้อย่างไร?",
+  title: "แผนพัฒนาตนเอง",
+  ownedByYou: "พนักงานเป็นผู้จัดทำและรับผิดชอบแผนเท่านั้น หัวหน้างานสามารถแสดงความคิดเห็นได้หลังจากพนักงานจัดทำแผนแล้วเสร็จเท่านั้น",
+  mobilityLabel: "การย้ายสถานที่ปฏิบัติงาน",
+  mobilityDetailLabel: "หากพิจารณาได้ตามเงื่อนไข โปรดระบุรายละเอียด",
+  dimensionLabel: "ด้านที่คุณอยากพัฒนาตนเองเป็นพิเศษ",
+  dimensionHint: "กรุณาเลือก 1 ด้านที่ตรงกับความต้องการมากที่สุด",
+  edgeLabel: "เหตุผลในการเลือกพัฒนาตนเองในหัวข้อด้านบน",
+  edgeHint: "โปรดระบุเหตุผลในการเลือกพัฒนาตนเองในหัวข้อด้านบน และสิ่งที่ต้องการพัฒนาโดยสังเขป",
+  expLabel: "แนวทางการพัฒนาตนเอง : ผ่านประสบการณ์จริง",
+  expHint: "โปรดระบุทักษะหรือสิ่งที่ต้องการเรียนรู้จากประสบการณ์อย่างน้อย 1 อย่าง (สูงสุด 3 อย่าง) รวมถึงช่วงเวลาที่คาดว่าจะดำเนินการ",
+  learnLabel: "แนวทางการพัฒนาตนเอง : ผ่านการเรียนรู้",
+  learnHint: "โปรดระบุหลักสูตร โครงการ หรือหัวข้อการสัมมนาที่คุณสนใจอย่างน้อย 1 อย่าง (สูงสุด 3 อย่าง) เป้าหมายที่คาดว่าจะได้รับ รวมถึงช่วงเวลาที่คาดว่าจะดำเนินการ",
+  supportLabel: "การสนับสนุนที่ต้องการจากหัวหน้างาน",
+  supportHint: "หัวหน้างานสามารถช่วยสนับสนุนเพื่อให้คุณบรรลุเป้าหมายได้อย่างไรบ้าง? โปรดระบุ",
+  managerLabel: "มุมมองของหัวหน้างาน",
+  managerHint: "คุณมีมุมมองอย่างไรกับแผนพัฒนาตนเองของพนักงาน และมองว่าพนักงานจะสามารถต่อยอดทักษะดังกล่าวในอนาคตได้อย่างไรบ้าง? ในฐานะหัวหน้างานจะสามารถสนับสนุนพนักงานอย่างไรบ้างเพื่อให้บรรลุเป้าหมาย?",
 };
 
 const MOBILITY_TH = {
-  "Yes, able to relocate anytime": "ได้ พร้อมย้ายได้ทุกเมื่อ",
-  "Yes, with some considerations": "ได้ แต่มีเงื่อนไขบางประการ",
-  "No": "ไม่พร้อม",
+  "Yes, able to relocate anytime": "พร้อมเดินทางไปปฏิบัติที่สถานที่อื่นได้ทุกเมื่อ",
+  "Yes, with some considerations": "อาจพิจารณาเดินทางไปปฏิบัติที่สถานที่อื่น ขึ้นอยู่กับเงื่อนไข",
+  "No": "ยังไม่พร้อมในขณะนี้",
 };
 const DIMENSION_TH = {
-  "Self-Cultivation (Individual)": "การขัดเกลาตนเอง (ระดับบุคคล)",
-  "Roles & Relationships (Team)": "บทบาทและความสัมพันธ์ (ระดับทีม)",
-  "Stewardship (Organisation)": "การดูแลรับผิดชอบ (ระดับองค์กร)",
-  "Consciousness (Universal)": "จิตสำนึก (ระดับสากล)",
+  "Self-Cultivation – Individual Level": "ด้านการทบทวนตนเอง (Self-cultivation – Individual Level)",
+  "Role & Relationship – Team Level": "ด้านบทบาทและความสัมพันธ์กับเพื่อนร่วมงาน (Role & Relationship – Team Level)",
+  "Stewardship – Organizational Level": "ด้านความรับผิดชอบและการมีส่วนร่วมต่อองค์กร (Stewardship – Organizational Level)",
+  "Consciousness – Universe Level": "ด้านจิตใต้สำนึกต่อส่วนรวม (Consciousness – Universe Level)",
 };
 const STAGE_TH = {
-  Mature: "เติบโตเต็มที่", Established: "มั่นคง", Developing: "กำลังพัฒนา", Emerging: "เริ่มต้น",
-  "Beyond Me": "เหนือกว่าตัวฉัน", "As Me": "เป็นตัวฉันเอง", "Through Me": "ผ่านตัวฉัน", "By Me": "โดยตัวฉัน", "To Me": "ต่อตัวฉัน",
+  Mature: "ก้าวหน้าอย่างมั่นคง (Mature)", Established: "พัฒนามั่นคง (Established)", Developing: "กำลังพัฒนา (Developing)", Emerging: "อยู่ในขั้นเริ่มต้น (Emerging)",
+  "Beyond Me": "ก้าวข้ามผ่านตัวฉัน (Beyond Me)", "As Me": "เป็นตัวฉัน (As Me)", "Through Me": "ผ่านตัวฉัน (Through Me)", "By Me": "ด้วยตัวฉัน (By Me)", "To Me": "ต่อตัวฉัน (To Me)",
 };
+// Visual identity for each growth stage, by position (most-advanced-first,
+// matching how every stage array in this app is already ordered). Deliberately
+// not a red-to-green gradient — these are different places on a path, not a
+// scored scale, so the colors are just distinct brand tints, not a hierarchy.
+// Icons vary by stage to keep them visually distinguishable, but color is
+// deliberately the SAME for every stage — this is self-reflection, not a
+// rating, and even a "brighter for advanced, duller for early" gradient
+// still reads as a hierarchy (gray in particular reads as "lesser," which
+// is exactly wrong for something like "To Me" or "Emerging" — those are
+// legitimate starting points, not deficient ones). Uniform color removes
+// any color-based ranking; only the selection state itself is highlighted.
+const GROWTH_STAGE_ICONS = [Mountain, TreeDeciduous, Leaf, Sprout, Circle];
+const GROWTH_STAGE_COLOR = BRAND.primary;
+
 const SNAPSHOT_TH = {
-  Flourishing: { label: "รุ่งเรือง", desc: "เสริมความแข็งแรงของระบบด้วยการสร้างสภาพแวดล้อมที่ช่วยให้ผู้อื่นและองค์รวมเจริญงอกงามได้" },
-  Generative: { label: "สร้างสรรค์ต่อยอด", desc: "สร้างมูลค่าที่แท้จริงและต่อยอดได้ ทั้งต่อบทบาท ทีม และเป้าหมายที่รับใช้" },
-  Sustaining: { label: "รักษาไว้", desc: "รักษาระบบให้ทำงานได้ตามปกติ ส่งมอบสิ่งที่คาดหวังได้อย่างเชื่อถือได้" },
-  Depleting: { label: "ถดถอย", desc: "ลดทอนความสามารถ ความไว้วางใจ หรือความเป็นหนึ่งเดียวของระบบ ทำให้ระบบอ่อนแอลง" },
+  Flourishing: { label: "สร้างคุณค่าและเปล่งประกาย (Flourishing)", desc: "สร้างสภาพแวดล้อมที่เอื้อให้ตนเองและผู้อื่นเติบโตและพัฒนาไปด้วยกันอย่างงอกงาม" },
+  Generative: { label: "สร้างสรรค์และต่อยอดสิ่งดี (Generative)", desc: "สร้างผลงานอันเป็นประโยชน์ และสามารถนำไปต่อยอดได้อย่างแท้จริง" },
+  Sustaining: { label: "รักษามาตรฐานตามความคาดหวัง (Sustaining)", desc: "รักษาการทำงานให้เป็นไปอย่างราบรื่น และส่งมอบงานได้ตามที่คาดหวัง" },
+  Depleting: { label: "ส่งผลให้การทำงานถดถอยลง (Depleting)", desc: "ส่งผลให้ประสิทธิภาพ ความไว้วางใจ และความสามารถในการทำงานลดลง" },
 };
 
 const COVER_TH = {
-  title: "เส้นทางการเติบโตและการสร้างมูลค่าเพิ่ม",
+  title: "แบบประเมินการเติบโต และการสร้างผลงานที่มีความหมาย (Growth & Value-Add Journey)",
   anchorMeaning: "บทสนทนาต่อเนื่องเพื่อดูแลผลงาน ความสามารถ และการเติบโตเป็นตัวเองที่ดีขึ้น",
   intro: "ไม่มี \"เวลาที่ถูกต้อง\" ตายตัวสำหรับการทบทวน มีเพียงการทบทวนตามช่วงเวลาจริงเท่านั้น ขอแนะนำให้คุณปรับปรุงเอกสารนี้อยู่เสมอ ตามการทำงาน การเรียนรู้ และผลกระทบที่เปลี่ยนแปลงไป ในบางช่วงเวลา ข้อมูลจากการทบทวนอาจถูกนำมาสรุปรวมเพื่อสนับสนุนการตัดสินใจด้านการดูแลบุคลากร ไม่ควรมีเรื่องน่าประหลาดใจเกิดขึ้น เพราะบทสนทนานี้เกิดขึ้นอย่างต่อเนื่องตลอดเวลา",
   employeeName: "ชื่อพนักงาน",
@@ -812,17 +828,17 @@ const COVER_TH = {
   jobGrade: "ระดับตำแหน่ง",
   designation: "ตำแหน่งงาน",
   directManager: "หัวหน้างาน",
-  isPeopleManager: "เป็นหัวหน้างานที่บริหารคน?",
-  yes: "ใช่ — มีทีมที่ดูแล",
+  isPeopleManager: "คุณมีบทบาทเป็นหัวหน้างานหรือไม่?",
+  yes: "ใช่ — ฉันมีทีมที่ดูแลอยู่",
   no: "ไม่",
   reflectionDate: "การทบทวนครั้งนี้ (ณ วันที่)",
-  fromRoster: "ข้อมูลนี้มาจากระบบบุคลากรที่ดูแลโดยฝ่าย P&O / Master Admin หากพบข้อมูลผิดพลาด กรุณาแจ้งฝ่าย P&O เพื่อแก้ไข ระบบจะอัปเดตให้อัตโนมัติ",
+  fromRoster: "หากพบข้อมูลพนักงานผิดพลาด กรุณาแจ้ง P&O Admin เพื่อทำการแก้ไข",
 };
 
 const UI_TH = {
   self: "ตนเอง",
   manager: "หัวหน้างาน",
-  selfReflection: "การทบทวนตนเอง",
+  selfReflection: "โดยพนักงาน",
   managerReflection: "มุมมองของหัวหน้างาน",
   managerFeedback: "ความเห็นจากหัวหน้างาน",
   back: "ย้อนกลับ",
@@ -862,6 +878,28 @@ function t(en, th, lang) {
   return lang === "th" && th ? th : en;
 }
 
+// Bolds just the topic phrase inside a longer question, instead of
+// underlining the whole sentence — helps people spot "which topic is this
+// about" without every prompt reading as one long emphasized block.
+// Falls back to the plain string untouched if the phrase isn't found.
+function boldPhrase(text, phrase) {
+  if (!text || !phrase) return text;
+  const idx = text.indexOf(phrase);
+  if (idx === -1) return text;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <strong>{phrase}</strong>
+      {text.slice(idx + phrase.length)}
+    </>
+  );
+}
+// Strips a trailing " (English parenthetical)" from a title/code string, to
+// get just the bare topic name for bolding inside a prompt sentence.
+function bareTopic(title) {
+  return title ? title.replace(/\s*\([^)]*\)\s*$/, "").trim() : title;
+}
+
 
 /* ========================================================================
    REQUIRED FIELD MANIFEST (drives the progress bar)
@@ -874,6 +912,7 @@ const TRACK_B_KEYS = [
   "b2_collab_self", "b2_collab_manager",
   "b2_steward_self", "b2_steward_manager",
   "b2_innovation_self", "b2_innovation_manager",
+  "b3_results_self", "b3_results_manager",
   "b4_self", "b4_manager", "b4_snapshot_self", "b4_snapshot_manager", "b4_commit_emp", "b4_commit_mgr",
 ];
 
@@ -889,6 +928,7 @@ function requiredFields(isPeopleManager, trackBOnly) {
     "b2_collab_self", "b2_collab_manager",
     "b2_steward_self", "b2_steward_manager",
     "b2_innovation_self", "b2_innovation_manager",
+    "b3_results_self", "b3_results_manager",
     "b4_self", "b4_manager", "b4_snapshot_self", "b4_snapshot_manager", "b4_commit_emp", "b4_commit_mgr",
   ];
   if (isPeopleManager) {
@@ -911,8 +951,12 @@ function pageRequiredFor(section, viewRole) {
   if (viewRole === "employee") {
     switch (section.id) {
       case "cover": return ["reflection_date"];
+      case "a1": return ["a1_stage", "a1_self"];
+      case "a2": return ["a2_stage", "a2_self"];
+      case "a3": return ["a3_stage", "a3_self"];
       case "a4": return ["a4_stage", "a4_self"];
       case "a5": return ["a5_mobility", "a5_dimension", "a5_edge", "a5_exp1", "a5_learn1", "a5_support"];
+      case "b3": return ["b3_results_self"];
       case "b4": return ["b4_self", "b4_snapshot_self", "b4_commit_emp"];
       default: return section.fields?.self ? [section.fields.self] : [];
     }
@@ -921,6 +965,7 @@ function pageRequiredFor(section, viewRole) {
     switch (section.id) {
       case "cover": return [];
       case "a5": return ["a5_manager"];
+      case "b3": return ["b3_results_manager"];
       case "b4": return ["b4_manager", "b4_snapshot_manager", "b4_commit_mgr"];
       default: return section.fields?.manager ? [section.fields.manager] : [];
     }
@@ -968,6 +1013,9 @@ function defaultData() {
     a5_mobility: "", a5_mobility_detail: "", a5_dimension: "", a5_edge: "",
     a5_exp1: "", a5_exp2: "", a5_exp3: "", a5_learn1: "", a5_learn2: "", a5_learn3: "",
     a5_support: "", a5_manager: "",
+    b3_okr1: "", b3_okr2: "", b3_okr3: "", b3_okr4: "", b3_okr5: "",
+    b3_progress1: "", b3_progress2: "", b3_progress3: "", b3_progress4: "", b3_progress5: "",
+    b3_results_self: "", b3_results_manager: "",
     b4_snapshot_self: "", b4_snapshot_manager: "", b4_commit_emp: false, b4_commit_emp_date: "", b4_commit_mgr: false, b4_commit_mgr_date: "",
   };
 }
@@ -1185,16 +1233,22 @@ function StageTable({ stages, title }) {
               </tr>
             </thead>
             <tbody>
-              {stages.map((s) => (
+              {stages.map((s, i) => {
+                const Icon = GROWTH_STAGE_ICONS[i] || Circle;
+                const color = GROWTH_STAGE_COLOR;
+                return (
                 <tr key={s.stage} className="border-t" style={{ borderColor: BRAND.line }}>
-                  <td className="px-3 py-2.5 font-semibold whitespace-nowrap align-top" style={{ color: BRAND.primary }}>
-                    {s.stage}
+                  <td className="px-3 py-2.5 whitespace-nowrap align-top" style={{ borderLeft: `3px solid ${color}` }}>
+                    <span className="inline-flex items-center gap-1.5 font-semibold" style={{ color }}>
+                      <Icon className="w-3.5 h-3.5" /> {s.stage}
+                    </span>
                   </td>
                   <td className="px-3 py-2.5 align-top text-slate-600 min-w-[180px]">{s.looksLike}</td>
                   <td className="px-3 py-2.5 align-top text-slate-600 min-w-[180px] italic">"{s.youdSay}"</td>
                   <td className="px-3 py-2.5 align-top text-slate-600 min-w-[180px]">{s.managerSees}</td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -1214,6 +1268,11 @@ function NoteBox({ label, children, tone = "info" }) {
   );
 }
 
+// The three-part breakdown the document asks for under every B1/B2
+// self-reflection prompt: situation, action/decision, result/impact.
+const STAR_PARTS_EN = ["Situation / challenge that occurred", "Action, decision, or your perspective on the situation", "Result / impact"];
+const STAR_PARTS_TH = ["สถานการณ์ / ความท้าทายที่เกิดขึ้น", "การกระทำ การตัดสินใจ หรือมุมมองของคุณต่อเหตุการณ์ดังกล่าว", "ผลลัพธ์ / ผลกระทบ"];
+
 const PILLAR_TH = {
   Person: "ตัวบุคคล",
   "Person (managers)": "ตัวบุคคล (สำหรับหัวหน้างาน)",
@@ -1228,12 +1287,12 @@ function SectionHeader({ code, title, chinese, anchorMeaning, pillar, track }) {
     <div className="mb-5">
       {pillar && (
         <p className="text-xs font-semibold uppercase tracking-wide mb-1 flex items-center gap-1.5" style={{ color: BRAND.mint }}>
-          <Building2 className="w-3.5 h-3.5" /> {t("Track B", "ส่วนที่ B", lang)} · {t(pillar, PILLAR_TH[pillar], lang)}
+          <Building2 className="w-3.5 h-3.5" /> {t("Track B – Stewardship & Value-Add", "ส่วนที่ B – ภาวะความเป็นผู้นำและการสร้างประโยชน์ (Stewardship & Value-Add)", lang)} · {t(pillar, PILLAR_TH[pillar], lang)}
         </p>
       )}
       {track === "A" && (
         <p className="text-xs font-semibold uppercase tracking-wide mb-1 flex items-center gap-1.5" style={{ color: BRAND.teal }}>
-          <Sprout className="w-3.5 h-3.5" /> {t("Track A · Growth & Becoming", "ส่วนที่ A · การเติบโตและการพัฒนาตนเอง", lang)}
+          <Sprout className="w-3.5 h-3.5" /> {t("Track A – Growth & Becoming", "ส่วนที่ A – การเติบโตและการพัฒนาตนเอง (Growth & Becoming)", lang)}
         </p>
       )}
       {code && !title && (
@@ -1246,12 +1305,21 @@ function SectionHeader({ code, title, chinese, anchorMeaning, pillar, track }) {
           {title}
         </h2>
       )}
-      {chinese && (
-        <p className="text-sm mb-1" style={{ fontFamily: "'Noto Sans SC', sans-serif", color: BRAND.teal }}>
-          {chinese}
+      {chinese && anchorMeaning ? (
+        <p className="text-sm mb-1">
+          <span style={{ fontFamily: "'Noto Sans SC', sans-serif", color: BRAND.teal, fontWeight: 600 }}>{chinese}</span>
+          <span className="text-slate-500"> : {anchorMeaning}</span>
         </p>
+      ) : (
+        <>
+          {chinese && (
+            <p className="text-sm mb-1" style={{ fontFamily: "'Noto Sans SC', sans-serif", color: BRAND.teal }}>
+              {chinese}
+            </p>
+          )}
+          {anchorMeaning && <p className="text-sm text-slate-500 leading-relaxed">{anchorMeaning}</p>}
+        </>
       )}
-      {anchorMeaning && <p className="text-sm text-slate-500 italic">{anchorMeaning}</p>}
     </div>
   );
 }
@@ -1272,29 +1340,46 @@ function InfoRow({ label, value, icon: Icon }) {
 }
 
 function CoverPage({ data, setField, role, person, manager, isPeopleManager, managerReadyCount, managerTotalCount }) {
-  const { cycle, lang } = useRosterCtx();
+  const { cycle, cycleStart, cycleEnd, lang } = useRosterCtx();
   const empRO = role !== "employee" || !!data.employee_submitted;
   const status = journeyStatus(data);
   const sMeta = JOURNEY_STATUS_META[status];
   const SIcon = sMeta.icon;
   return (
     <div>
-      <SectionHeader title={t("Growth & Value-Add Journey", COVER_TH.title, lang)} anchorMeaning={t("A continuous dialogue to steward contribution, capability, and becoming.", COVER_TH.anchorMeaning, lang)} />
+      <SectionHeader
+        title={
+          lang === "th" ? (
+            <>แบบประเมินการเติบโต และการสร้างผลงานที่มีความหมาย<br />(Growth &amp; Value-Add Journey)</>
+          ) : (
+            "Growth & Value-Add Journey"
+          )
+        }
+      />
       <div className="rounded-xl px-4 py-3 mb-4 flex items-start gap-2.5" style={{ backgroundColor: "#F0F8F8", border: `1px solid ${BRAND.line}` }}>
         <Clock className="w-4 h-4 mt-0.5 shrink-0" style={{ color: BRAND.primary }} />
         <p className="text-sm" style={{ color: BRAND.deep }}>
           {t(
-            <>This journey is for the <span className="font-semibold">{cycle} review cycle</span>. It covers your growth, contribution, and value-add across this year — reflect on the whole period, not just recent weeks.</>,
-            <>แบบประเมินนี้สำหรับ<span className="font-semibold">รอบการประเมินปี {cycle}</span> ครอบคลุมการเติบโต การมีส่วนร่วม และการสร้างมูลค่าเพิ่มของคุณตลอดทั้งปี — โปรดทบทวนภาพรวมทั้งปี ไม่ใช่แค่ช่วงไม่กี่สัปดาห์ที่ผ่านมา</>,
+            <>This journey is for the <span className="font-semibold">{cycle} review cycle</span>.</>,
+            <>แบบประเมินนี้สำหรับ<span className="font-semibold">รอบการประเมินปี {cycle}</span></>,
             lang
+          )}
+          {cycleEnd && (
+            <span className="block mt-1 font-medium">
+              {t(
+                `Please complete this by ${new Date(cycleEnd).toLocaleDateString()}${cycleStart ? ` (window opened ${new Date(cycleStart).toLocaleDateString()})` : ""}.`,
+                `กรุณาทำให้เสร็จภายในวันที่ ${new Date(cycleEnd).toLocaleDateString("th-TH")}${cycleStart ? ` (เริ่มเมื่อ ${new Date(cycleStart).toLocaleDateString("th-TH")})` : ""}`,
+                lang
+              )}
+            </span>
           )}
         </p>
       </div>
       <p className="text-sm text-slate-500 leading-relaxed mb-6">
-        {lang === "th" ? COVER_TH.intro : (
-          <>There is no "right time" — only real time reflection. You are encouraged to update this as your work, learning, and
-          impact evolve. At certain moments, reflections from this journey may be synthesised to support stewardship
-          decisions. There should be no surprises, because the dialogue is continuous.</>
+        {t(
+          "This evaluation is designed for employees to review and reflect on their own perspective of their recent work — including their own growth and development, working with others, day-to-day practice, results, and their contribution to the organisation as a whole. This reflection is meant to help employees see both what's going well and what they've learned, as well as opportunities to build further, supporting continuous understanding and development at the individual, department, and organisational level. Information and results from this evaluation will be analysed in aggregate to inform people-development decisions and related initiatives going forward.",
+          "แบบประเมินนี้มีเป้าหมายเพื่อให้พนักงานได้ทบทวนและสะท้อนมุมมองของตนเองต่อการทำงานที่ผ่านมา ทั้งในด้านการเติบโตและการพัฒนาของตนเอง การทำงานร่วมกับผู้อื่น การปฏิบัติงาน ผลลัพธ์ รวมถึงการมีส่วนร่วมกับองค์กรในภาพรวม การสะท้อนความคิดเห็นในครั้งนี้มุ่งเน้นให้พนักงานได้มองเห็นทั้งสิ่งที่ทำได้ดี สิ่งที่ได้เรียนรู้ และโอกาสในการพัฒนาต่อยอด เพื่อให้เกิดความเข้าใจและการพัฒนาอย่างต่อเนื่องทั้งในระดับบุคคล แผนก และองค์กร ข้อมูลและผลการประเมินจะถูกนำไปวิเคราะห์ในภาพรวม เพื่อใช้เป็นข้อมูลประกอบการพัฒนาบุคลากรและแนวทางการพัฒนาในด้านต่าง ๆ ต่อไป",
+          lang
         )}
       </p>
 
@@ -1327,7 +1412,7 @@ function CoverPage({ data, setField, role, person, manager, isPeopleManager, man
       </div>
 
       <div
-        className="rounded-xl border p-4 grid grid-cols-2 gap-4 mb-2"
+        className="rounded-xl border p-4 grid grid-cols-1 min-[480px]:grid-cols-2 gap-4 mb-2"
         style={{ borderColor: BRAND.line, backgroundColor: "#F6FBFA" }}
       >
         <InfoRow label={t("Employee name", COVER_TH.employeeName, lang)} value={person ? `${person.firstName} ${person.lastName}` : "—"} icon={User} />
@@ -1338,11 +1423,11 @@ function CoverPage({ data, setField, role, person, manager, isPeopleManager, man
         <InfoRow label={t("Job grade", COVER_TH.jobGrade, lang)} value={person?.jobGrade} />
         <InfoRow label={t("Designation", COVER_TH.designation, lang)} value={person?.designation} />
         <InfoRow label={t("Direct manager", COVER_TH.directManager, lang)} value={manager ? `${manager.firstName} ${manager.lastName}` : "—"} icon={UsersIcon} />
-        <InfoRow label={t("People manager?", COVER_TH.isPeopleManager, lang)} value={isPeopleManager ? t("Yes — manages a team", COVER_TH.yes, lang) : t("No", COVER_TH.no, lang)} />
+        <InfoRow label={t("Do you have a people manager role?", COVER_TH.isPeopleManager, lang)} value={isPeopleManager ? t("Yes — I have a team I manage", COVER_TH.yes, lang) : t("No", COVER_TH.no, lang)} />
       </div>
       <p className="text-xs text-slate-400 mb-6">
         {t(
-          "These details come from the People roster managed by P&O / Master Admin. If anything looks wrong, ask your P&O team to correct it there — it will update here automatically.",
+          "If any employee details look wrong, please let your P&O Admin know so they can correct it.",
           COVER_TH.fromRoster,
           lang
         )}
@@ -1366,28 +1451,28 @@ function GrowthStagePage({ section, data, setField, role }) {
   return (
     <div>
       <SectionHeader code={section.code} title={t(section.title, th.title, lang)} chinese={section.chinese} anchorMeaning={t(section.anchorMeaning, th.anchorMeaning, lang)} track="A" />
-      <p className="text-sm text-slate-600 leading-relaxed mb-4">{t(section.intro, th.intro, lang)}</p>
-      <p className="text-xs text-slate-400 italic mb-4">{t("Growth stages — these are NOT ratings. Each stage is a legitimate place on a long journey. Locate yourself gently.", UI_TH.viewOnlyGrowthStages, lang)}</p>
+      {section.id === "a1" && (
+        <p className="text-xs text-slate-400 mb-4">
+          {t("Remark: Everything in Track A stays between you and your direct manager.", "หมายเหตุ: ข้อมูลทั้งหมดในส่วนนี้เป็นความลับเฉพาะพนักงานและหัวหน้างานเท่านั้น", lang)}
+        </p>
+      )}
+      <p className="text-sm text-slate-600 leading-relaxed mb-2">{t(section.intro, th.intro, lang)}</p>
 
       <StageTable stages={stages} />
 
-      {section.progression && <NoteBox label={t("Progression", UI_TH.progression, lang)}>{t(section.progression, th.progression, lang)}</NoteBox>}
-      {section.confusion && <NoteBox label={t("Common confusion", UI_TH.commonConfusion, lang)} tone="warn">{t(section.confusion, th.confusion, lang)}</NoteBox>}
+      {section.confusion && <NoteBox label={t("Note", "ข้อคิด", lang)}>{t(section.confusion, th.confusion, lang)}</NoteBox>}
 
-      {section.stageRadio && (
-        <Field label={t("Self-stage reflection — locate yourself, gently", UI_TH.selfStageReflection, lang)} required>
-          <RadioGroup
-            options={section.stages.map((s) => s.stage)}
-            value={data[fields.radio]}
-            onChange={(v) => setField(fields.radio, v)}
-            readOnly={empRO}
-            renderOption={lang === "th" ? (opt) => <span>{STAGE_TH[opt] || opt}</span> : undefined}
-          />
+      {(section.stageRadio || fields?.radio) && (
+        <Field label={t("Which stage best describes you right now?", "คุณอยู่ในระดับใด", lang)} required>
+          <p className="text-xs font-medium mb-2.5" style={{ color: BRAND.red }}>
+            {t("Reminder: this is a growth stage, not a performance rating.", "ข้อควรทราบ: นี่คือระดับการเติบโต ไม่ใช่คะแนนการประเมิน", lang)}
+          </p>
+          <GrowthStageSelector stages={section.stages} value={data[fields.radio]} onChange={(v) => setField(fields.radio, v)} readOnly={empRO} lang={lang} />
         </Field>
       )}
 
-      <Field label={t("Self-reflection", UI_TH.selfReflection, lang)} required>
-        <PromptList prompts={lang === "th" && th.selfPrompts ? th.selfPrompts : section.selfPrompts} />
+      <Field label={t("By Employee", UI_TH.selfReflection, lang)} required>
+        <p className="text-sm text-slate-700 mb-2">{boldPhrase((lang === "th" && th.selfPrompts ? th.selfPrompts : section.selfPrompts)[0], bareTopic(t(section.title, th.title, lang)))}</p>
         <TextArea value={data[fields.self]} onChange={(v) => setField(fields.self, v)} readOnly={empRO} placeholder={t("Write about a real moment — specifics carry further than a general theme.", "เขียนถึงเหตุการณ์จริง — รายละเอียดเฉพาะเจาะจงมีความหมายมากกว่าภาพรวมกว้าง ๆ", lang)} rows={5} />
       </Field>
 
@@ -1400,8 +1485,46 @@ function GrowthStagePage({ section, data, setField, role }) {
         locked={mgrLocked}
         waitingForEmployee={waitingForEmployee}
         placeholder={t("What shift have you seen, and how can you support them?", "คุณเห็นการเปลี่ยนแปลงอะไร และจะสนับสนุนเขา/เธอได้อย่างไร?", lang)}
+        topic={bareTopic(t(section.title, th.title, lang))}
       />
     </div>
+  );
+}
+
+// B1/B2/B3 self-prompts all follow "<lead-in> <the actual thing to reflect
+// on> <โดยระบุ / specifying: ...>". Bold just that middle part — it's a
+// different shape from Track A's prompts, so a separate helper from
+// boldPhrase rather than forcing the same topic-matching logic to fit.
+function boldStarLead(text, lang) {
+  if (!text) return text;
+  if (lang === "th") {
+    const prefixes = ["จงยกตัวอย่างเหตุการณ์ที่สะท้อนให้เห็นถึง", "จงยกตัวอย่างเหตุการณ์ที่สะท้อนให้เห็นว่า"];
+    const prefix = prefixes.find((p) => text.startsWith(p));
+    if (!prefix) return text;
+    const rest = text.slice(prefix.length);
+    const idx = rest.indexOf("โดยระบุ");
+    const middle = (idx === -1 ? rest : rest.slice(0, idx)).replace(/\s+$/, "");
+    const suffix = idx === -1 ? "" : rest.slice(idx);
+    return (
+      <>
+        {prefix}
+        <strong>{middle}</strong>
+        {suffix ? <> {suffix}</> : null}
+      </>
+    );
+  }
+  const prefix = "Give an example that reflects ";
+  if (!text.startsWith(prefix)) return text;
+  const rest = text.slice(prefix.length);
+  const idx = rest.indexOf(", specifying:");
+  const middle = idx === -1 ? rest : rest.slice(0, idx);
+  const suffix = idx === -1 ? "" : rest.slice(idx);
+  return (
+    <>
+      {prefix}
+      <strong>{middle}</strong>
+      {suffix}
+    </>
   );
 }
 
@@ -1415,26 +1538,23 @@ function ReflectionPage({ section, data, setField, role }) {
   return (
     <div>
       {section.managerOnly && (
-        <div className="mb-4 text-xs font-medium px-3 py-1.5 rounded-full inline-flex" style={{ backgroundColor: "#F0F8F8", color: BRAND.primary, border: `1px solid ${BRAND.line}` }}>
-          {t("People Managers Only", UI_TH.peopleManagersOnly, lang)}
+        <div className="mb-4 text-xs font-semibold px-3 py-1.5 rounded-full inline-flex items-center gap-1" style={{ backgroundColor: "#FFF4F3", color: BRAND.red, border: `1px solid #F6C8C3` }}>
+          {t("For managers only — if this doesn't apply to you, please skip to the next section", "สำหรับหัวหน้างานเท่านั้น หากไม่ใช่ กรุณาข้ามไปหัวข้อถัดไป", lang)}
         </div>
       )}
-      <SectionHeader code={t(section.code, th.code, lang)} pillar={section.pillar} />
-      {section.anchorZh && (
-        <p className="text-sm mb-1" style={{ fontFamily: "'Noto Sans SC', sans-serif", color: BRAND.teal }}>
-          {section.anchorZh}
-        </p>
-      )}
-      {section.anchorEn && <p className="text-sm text-slate-500 italic mb-4">{lang === "th" && th.anchorEn ? th.anchorEn : `Anchored in ${section.anchorEn}`}</p>}
-      {section.confusion && <NoteBox label={t("Common confusion", UI_TH.commonConfusion, lang)} tone="warn">{t(section.confusion, th.confusion, lang)}</NoteBox>}
+      <SectionHeader code={t(section.code, th.code, lang)} pillar={section.pillar} anchorMeaning={section.anchorEn ? t(section.anchorEn, th.anchorEn, lang) : null} />
+      {section.confusion && <NoteBox label={t("Note", "ข้อคิด", lang)}>{t(section.confusion, th.confusion, lang)}</NoteBox>}
 
-      <Field label={t(section.selfLabel || "Self-Reflection", th.selfLabel, lang)} required>
-        <p className="text-xs text-slate-400 mb-2">{t("Don't worry about length. A few sentences with real specifics carry further than a polished paragraph.", UI_TH.dontWorryLength, lang)}</p>
-        <PromptList prompts={lang === "th" && th.selfPrompts ? th.selfPrompts : section.selfPrompts} />
+      <Field label={t(section.selfLabel || "Self-Reflection", th.selfLabel, lang)} required={!section.managerOnly}>
+        <p className="text-sm text-slate-700 mb-2">{boldStarLead((lang === "th" && th.selfPrompts ? th.selfPrompts : section.selfPrompts)[0], lang)}</p>
+        <p className="text-xs text-slate-400 mb-1">{t("Please specify:", "โดยระบุ:", lang)}</p>
+        <ul className="text-sm text-slate-500 mb-3 space-y-1 leading-relaxed list-disc pl-5">
+          {(lang === "th" ? STAR_PARTS_TH : STAR_PARTS_EN).map((p, i) => <li key={i}>{p}</li>)}
+        </ul>
         <TextArea value={data[fields.self]} onChange={(v) => setField(fields.self, v)} readOnly={empRO} rows={5} />
       </Field>
 
-      <ManagerFieldBlock label={t("Manager Feedback", UI_TH.managerFeedback, lang)} prompts={lang === "th" && th.managerPrompts ? th.managerPrompts : section.managerPrompts} value={data[fields.manager]} onChange={(v) => setField(fields.manager, v)} role={role} locked={mgrLocked} waitingForEmployee={waitingForEmployee} />
+      <ManagerFieldBlock label={t("Manager Feedback", UI_TH.managerFeedback, lang)} prompts={lang === "th" && th.managerPrompts ? th.managerPrompts : section.managerPrompts} value={data[fields.manager]} onChange={(v) => setField(fields.manager, v)} role={role} locked={mgrLocked} waitingForEmployee={waitingForEmployee} topic={bareTopic(t(section.code, th.code, lang))} />
     </div>
   );
 }
@@ -1456,6 +1576,82 @@ function GrowthExperimentTable({ label, values, onChange, readOnly }) {
           />
         </div>
       ))}
+    </div>
+  );
+}
+
+function OKRTable({ objectives, progresses, onChangeObjective, onChangeProgress, readOnly, lang }) {
+  return (
+    <div className="rounded-xl border overflow-hidden mb-1" style={{ borderColor: BRAND.line }}>
+      {objectives.map((v, i) => (
+        <div key={i} className={`flex items-stretch ${i !== 0 ? "border-t" : ""}`} style={{ borderColor: BRAND.line }}>
+          <div className="w-8 shrink-0 flex items-center justify-center text-sm font-semibold" style={{ backgroundColor: "#F6FBFA", color: BRAND.primary }}>
+            {i + 1}
+          </div>
+          <div className="flex flex-col min-[560px]:flex-row flex-1">
+            <input
+              value={v || ""}
+              onChange={(e) => onChangeObjective(i, e.target.value)}
+              readOnly={readOnly}
+              placeholder={t("Objective (OKR)", "เป้าหมาย (OKRs)", lang)}
+              className="flex-1 px-3 py-2.5 text-sm focus:outline-none border-b min-[560px]:border-b-0 min-[560px]:border-r"
+              style={{ borderColor: BRAND.line }}
+            />
+            <input
+              value={progresses[i] || ""}
+              onChange={(e) => onChangeProgress(i, e.target.value)}
+              readOnly={readOnly}
+              placeholder={t("Progress / Result", "ความคืบหน้า / ผลลัพธ์", lang)}
+              className="flex-1 px-3 py-2.5 text-sm focus:outline-none"
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function B3Page({ data, setField, role }) {
+  const { lang } = useRosterCtx();
+  const th = SECTIONS_TH.b3;
+  const empRO = role !== "employee" || !!data.employee_submitted;
+  const mgrLocked = role === "manager" && !!data.manager_submitted;
+  const waitingForEmployee = role === "manager" && !data.manager_submitted && !data.employee_submitted;
+  const setOkr = (i, v) => setField(`b3_okr${i + 1}`, v);
+  const setProgress = (i, v) => setField(`b3_progress${i + 1}`, v);
+  return (
+    <div>
+      <SectionHeader code={t("Performance", th.pillar, lang)} pillar="Performance" />
+      <Field label={t("Objectives (OKRs)", "เป้าหมาย (OKRs)", lang)}>
+        <p className="text-sm text-slate-700 mb-2">
+          {t("If your role tracks formal OKRs, list up to 5 with their current progress or result. (Optional)", "หากบทบาทของคุณมีการติดตาม OKR อย่างเป็นทางการ ระบุได้สูงสุด 5 ข้อพร้อมความคืบหน้าหรือผลลัพธ์ปัจจุบัน (ไม่บังคับ)", lang)}
+        </p>
+        <OKRTable
+          objectives={[data.b3_okr1, data.b3_okr2, data.b3_okr3, data.b3_okr4, data.b3_okr5]}
+          progresses={[data.b3_progress1, data.b3_progress2, data.b3_progress3, data.b3_progress4, data.b3_progress5]}
+          onChangeObjective={setOkr}
+          onChangeProgress={setProgress}
+          readOnly={empRO}
+          lang={lang}
+        />
+      </Field>
+
+      <SectionHeader title={t("Delivering Results & Impact", "การส่งมอบผลงานให้บรรลุเป้าหมายและมีความหมายต่อส่วนรวม (Delivering Results & Impact)", lang)} anchorMeaning={t("The value and meaningful impact of the Employee's work under their assigned role.", th.anchor, lang)} />
+
+      <Field label={t(th.selfLabel, th.selfLabel, lang)} required>
+        <p className="text-sm text-slate-700 mb-2">{boldStarLead(t("Give an example that reflects the value and meaningful impact from work you delivered or completed, specifying: the situation, your perspective, the action you took, and what happened.", th.selfPrompts[0], lang), lang)}</p>
+        <TextArea value={data.b3_results_self} onChange={(v) => setField("b3_results_self", v)} readOnly={empRO} rows={5} />
+      </Field>
+
+      <ManagerFieldBlock
+        label={t("Manager Feedback", UI_TH.managerFeedback, lang)}
+        prompts={th.managerPrompts}
+        value={data.b3_results_manager}
+        onChange={(v) => setField("b3_results_manager", v)}
+        role={role}
+        locked={mgrLocked}
+        waitingForEmployee={waitingForEmployee}
+      />
     </div>
   );
 }
@@ -1491,6 +1687,7 @@ function GrowthPlanPage({ data, setField, role }) {
       )}
 
       <Field label={t("Dimension focus — choose ONE", A5_TH.dimensionLabel, lang)} required>
+        <p className="text-xs text-slate-400 mb-2">{t("Please choose only 1 dimension you would like to develop from the following list.", A5_TH.dimensionHint, lang)}</p>
         <RadioGroup
           options={A5_DIMENSIONS}
           value={data.a5_dimension}
@@ -1500,29 +1697,34 @@ function GrowthPlanPage({ data, setField, role }) {
         />
       </Field>
 
-      <Field label={t("Growth edge — one sentence", A5_TH.edgeLabel, lang)} required>
-        <p className="text-xs text-slate-400 mb-2">{t("What's the one behaviour, capability, or way of showing up that is inviting your growth at this stage, and why this one?", A5_TH.edgeHint, lang)}</p>
+      <Field label={t("Reason for choosing this dimension", A5_TH.edgeLabel, lang)} required>
+        <p className="text-xs text-slate-400 mb-2">{t("Reason for choosing the above dimension to develop for your growth journey?", A5_TH.edgeHint, lang)}</p>
         <TextArea value={data.a5_edge} onChange={(v) => setField("a5_edge", v)} readOnly={empRO} rows={2} />
       </Field>
 
-      <Field label={t("How you'll grow — EXPERIENCE", A5_TH.expLabel, lang)} required>
-        <p className="text-xs text-slate-400 mb-2">{t("Stretch assignments, cross-functional projects, leading something new. Name the experience, what you'll deliberately try to grow through it, and roughly when.", A5_TH.expHint, lang)}</p>
-        <GrowthExperimentTable label="e.g. Pair with a colleague on Q1 cross-team coordination so they can lead by Q2" values={[data.a5_exp1, data.a5_exp2, data.a5_exp3]} onChange={setExp} readOnly={empRO} />
+      <Field label={t("How You Will Grow: Through Doing & Experiencing", A5_TH.expLabel, lang)} required>
+        <p className="text-xs text-slate-400 mb-2">{t("For each entry, name the experience or assignment (up to 3), what you'll deliberately try to grow through it, and roughly when. The specificity matters.", A5_TH.expHint, lang)}</p>
+        <p className="text-xs text-slate-400 mb-2 italic">{t("Example: \"Pair with a colleague on Q1 cross-team coordination so they can lead by Q2\" lands better than \"Take on more cross-team work.\"", "ตัวอย่าง: \"เรียนรู้การทำงานเป็นทีมร่วมกับแผนกขาย เพื่อบรรลุเป้าหมายร่วมกันภายในไตรมาส 1\"", lang)}</p>
+        <GrowthExperimentTable label={t("e.g. Pair with a colleague on Q1 cross-team coordination so they can lead by Q2", "รายละเอียด", lang)} values={[data.a5_exp1, data.a5_exp2, data.a5_exp3]} onChange={setExp} readOnly={empRO} />
       </Field>
 
-      <Field label={t("How you'll grow — LEARNING", A5_TH.learnLabel, lang)} required>
-        <p className="text-xs text-slate-400 mb-2">{t("Coaching, mentoring, peer learning, MEP/MLP, courses. Name the programme, the skill it builds, and roughly when.", A5_TH.learnHint, lang)}</p>
-        <GrowthExperimentTable label="e.g. Coaching for Managers MEP, Q2 cohort, to build inquiry-based coaching" values={[data.a5_learn1, data.a5_learn2, data.a5_learn3]} onChange={setLearn} readOnly={empRO} />
+      <Field label={t("How You Will Grow: Through Learning", A5_TH.learnLabel, lang)} required>
+        <p className="text-xs text-slate-400 mb-2">{t("For each entry, name the programme/course/coaching, what skill or perspective you're going there to build (up to 3), and roughly when.", A5_TH.learnHint, lang)}</p>
+        <p className="text-xs text-slate-400 mb-2 italic">{t("Example: \"Coaching for Managers MEP, Q2 cohort, to build inquiry-based coaching\" lands better than \"Take a leadership course.\"", "ตัวอย่าง: \"เข้าร่วมหลักสูตรพัฒนาการสื่อสาร ภายในไตรมาส 1 เพื่อฝึกฝนการนำเสนอผลงานกับหัวหน้างานให้ดียิ่งขึ้น\"", lang)}</p>
+        <GrowthExperimentTable label={t("e.g. Coaching for Managers MEP, Q2 cohort, to build inquiry-based coaching", "รายละเอียด", lang)} values={[data.a5_learn1, data.a5_learn2, data.a5_learn3]} onChange={setLearn} readOnly={empRO} />
       </Field>
 
-      <Field label={t("Support you need from your manager", A5_TH.supportLabel, lang)} required>
-        <p className="text-xs text-slate-400 mb-2">{t("What would your manager do, say, or stop doing that would most help? How you'll know you've grown.", A5_TH.supportHint, lang)}</p>
+      <Field label={t("Support you need from your Direct Manager", A5_TH.supportLabel, lang)} required>
+        <p className="text-xs text-slate-400 mb-2">{t("How could your Direct Manager do, say, or perhaps stop doing that would most help you in your growth experiment(s)? Specifics are gold here.", A5_TH.supportHint, lang)}</p>
         <TextArea value={data.a5_support} onChange={(v) => setField("a5_support", v)} readOnly={empRO} rows={4} />
       </Field>
 
       <ManagerFieldBlock
-        label={t("Manager stewardship reflection", A5_TH.managerLabel, lang)}
-        prompts={[t("How can this plan build on his/her existing strengths? Tell them about a moment.", A5_TH.managerHint, lang), t("How can you support him/her on their growth experiments?", "", lang)].filter(Boolean)}
+        label={t("By Direct Manager", A5_TH.managerLabel, lang)}
+        prompts={[
+          t("How can this plan build on the Employee's existing strengths?", "แผนนี้จะสามารถต่อยอดจากจุดแข็งที่พนักงานมีอยู่แล้วได้อย่างไร?", lang),
+          t("How could you support the Employee's on his/her growth experiment(s)?", "ในฐานะหัวหน้างานจะสามารถสนับสนุนพนักงานอย่างไรบ้างเพื่อให้บรรลุเป้าหมาย?", lang),
+        ]}
         value={data.a5_manager}
         onChange={(v) => setField("a5_manager", v)}
         role={role}
@@ -1536,32 +1738,34 @@ function GrowthPlanPage({ data, setField, role }) {
 function CommitBlock({ empChecked, empDate, mgrChecked, mgrDate, onEmp, onMgr, role, empDisabled, mgrDisabled }) {
   const { lang } = useRosterCtx();
   return (
-    <div className="mt-2 rounded-xl border p-4 grid grid-cols-2 gap-4" style={{ borderColor: BRAND.line, backgroundColor: "#F6FBFA" }}>
+    <div className="mt-2 rounded-xl border p-4 grid grid-cols-1 min-[480px]:grid-cols-2 gap-4" style={{ borderColor: BRAND.line, backgroundColor: "#F6FBFA" }}>
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: BRAND.deep }}>
           {t("Employee", "พนักงาน", lang)}
         </p>
-        <label className="flex items-center gap-2 text-sm mb-2">
-          <input type="checkbox" checked={!!empChecked} disabled={role !== "employee" || empDisabled} onChange={(e) => onEmp(e.target.checked, empDate)} className="w-4 h-4" />
-          {t("Committed", "ยืนยันแล้ว", lang)}
+        <label className="flex items-start gap-2 text-sm mb-2">
+          <input type="checkbox" checked={!!empChecked} disabled={role !== "employee" || empDisabled} onChange={(e) => onEmp(e.target.checked, empDate)} className="w-4 h-4 mt-0.5" />
+          {t("I have reviewed and confirmed my answers in this evaluation", "ฉันได้ตรวจสอบและยืนยันคำตอบในแบบประเมิน", lang)}
         </label>
+        <label className="text-xs text-slate-400 mb-1 block">{t("As of date", "ณ วันที่", lang)}</label>
         <TextInput type="date" value={empDate} onChange={(v) => onEmp(empChecked, v)} readOnly={role !== "employee" || empDisabled} />
       </div>
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: BRAND.deep }}>
           {t("Direct manager", "หัวหน้างาน", lang)}
         </p>
-        <label className="flex items-center gap-2 text-sm mb-2">
-          <input type="checkbox" checked={!!mgrChecked} disabled={role !== "manager" || mgrDisabled} onChange={(e) => onMgr(e.target.checked, mgrDate)} className="w-4 h-4" />
-          {t("Committed", "ยืนยันแล้ว", lang)}
+        <label className="flex items-start gap-2 text-sm mb-2">
+          <input type="checkbox" checked={!!mgrChecked} disabled={role !== "manager" || mgrDisabled} onChange={(e) => onMgr(e.target.checked, mgrDate)} className="w-4 h-4 mt-0.5" />
+          {t("I have reviewed and confirmed my answers in this evaluation", "ฉันได้ตรวจสอบและยืนยันคำตอบในแบบประเมิน", lang)}
         </label>
+        <label className="text-xs text-slate-400 mb-1 block">{t("As of date", "ณ วันที่", lang)}</label>
         <TextInput type="date" value={mgrDate} onChange={(v) => onMgr(mgrChecked, v)} readOnly={role !== "manager" || mgrDisabled} />
       </div>
     </div>
   );
 }
 
-function ManagerFieldBlock({ label, prompts, value, onChange, role, placeholder, rows = 4, locked, waitingForEmployee }) {
+function ManagerFieldBlock({ label, prompts, value, onChange, role, placeholder, rows = 4, locked, waitingForEmployee, topic }) {
   const { lang } = useRosterCtx();
   if (role === "employee") {
     if (!value) return null; // hidden entirely until the manager has actually responded
@@ -1591,17 +1795,24 @@ function ManagerFieldBlock({ label, prompts, value, onChange, role, placeholder,
   }
   return (
     <Field label={label} required>
-      <PromptList prompts={prompts} />
+      {topic ? (
+        <>
+          <p className="text-sm text-slate-700 mb-2">{boldPhrase(prompts?.[0], topic)}</p>
+          {prompts?.length > 1 && <PromptList prompts={prompts.slice(1)} />}
+        </>
+      ) : (
+        <PromptList prompts={prompts} />
+      )}
       <TextArea value={value} onChange={onChange} readOnly={role !== "manager" || !!locked} placeholder={placeholder} rows={rows} />
     </Field>
   );
 }
 
 const SNAPSHOT_META = {
-  Flourishing: { icon: TreeDeciduous, color: BRAND.mint, order: 3 },
-  Generative: { icon: Sprout, color: BRAND.teal, order: 2 },
-  Sustaining: { icon: Leaf, color: BRAND.gray, order: 1 },
-  Depleting: { icon: Link2Off, color: BRAND.red, order: 0 },
+  Flourishing: { icon: TreeDeciduous, color: BRAND.mint, order: 0 },
+  Generative: { icon: Sprout, color: BRAND.teal, order: 1 },
+  Sustaining: { icon: Leaf, color: BRAND.gray, order: 2 },
+  Depleting: { icon: Link2Off, color: BRAND.red, order: 3 },
 };
 const SNAPSHOT_ORDER = ["Flourishing", "Generative", "Sustaining", "Depleting"];
 
@@ -1642,6 +1853,39 @@ function SnapshotSelector({ value, onChange, readOnly }) {
   );
 }
 
+function GrowthStageCard({ stageObj, index, selected, onClick, disabled, lang }) {
+  const Icon = GROWTH_STAGE_ICONS[index] || Circle;
+  const color = GROWTH_STAGE_COLOR;
+  const label = lang === "th" ? STAGE_TH[stageObj.stage] || stageObj.stage : stageObj.stage;
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={`flex-1 min-w-[130px] text-left rounded-2xl border-2 p-3.5 transition ${disabled && !selected ? "opacity-60" : ""}`}
+      style={selected ? { borderColor: color, backgroundColor: `${color}1A` } : { borderColor: BRAND.line, backgroundColor: "white" }}
+    >
+      <div
+        className="w-8 h-8 rounded-full flex items-center justify-center mb-2"
+        style={selected ? { backgroundColor: color, color: "white" } : { backgroundColor: "#F1F5F4", color }}
+      >
+        <Icon className="w-4 h-4" />
+      </div>
+      <p className="text-sm font-semibold leading-snug" style={{ color: selected ? color : "#1e293b" }}>{label}</p>
+    </button>
+  );
+}
+
+function GrowthStageSelector({ stages, value, onChange, readOnly, lang }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {stages.map((s, i) => (
+        <GrowthStageCard key={s.stage} stageObj={s} index={i} selected={value === s.stage} disabled={readOnly} onClick={() => onChange && onChange(s.stage)} lang={lang} />
+      ))}
+    </div>
+  );
+}
+
 function SnapshotResultCard({ value }) {
   const { lang } = useRosterCtx();
   const meta = SNAPSHOT_META[value];
@@ -1663,12 +1907,13 @@ function SnapshotResultCard({ value }) {
 }
 
 function ValueAddScale({ selfKey, managerKey }) {
+  const { lang } = useRosterCtx();
   if (!selfKey && !managerKey) return null;
   const pos = (k) => (SNAPSHOT_META[k].order / 3) * 100;
   return (
     <div className="mt-4 mb-1">
-      <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: BRAND.gray }}>Scale — Depleting to Flourishing</p>
-      <div className="relative h-2.5 rounded-full mt-4 mb-4" style={{ background: `linear-gradient(to right, ${BRAND.red}, ${BRAND.gray}, ${BRAND.teal}, ${BRAND.mint})` }}>
+      <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: BRAND.gray }}>{t("Scale — Flourishing to Depleting", "สเกล — สร้างคุณค่าและเปล่งประกาย ไปจนถึง ส่งผลให้การทำงานถดถอยลง", lang)}</p>
+      <div className="relative h-2.5 rounded-full mt-4 mb-4" style={{ background: `linear-gradient(to right, ${BRAND.mint}, ${BRAND.teal}, ${BRAND.gray}, ${BRAND.red})` }}>
         {selfKey && (
           <div
             className="absolute -top-3.5 w-4 h-4 rounded-full bg-white border-2 flex items-center justify-center"
@@ -1685,8 +1930,8 @@ function ValueAddScale({ selfKey, managerKey }) {
         )}
       </div>
       <div className="flex items-center gap-4 text-xs text-slate-500">
-        {selfKey && <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-white border-2 inline-block" style={{ borderColor: SNAPSHOT_META[selfKey].color }} /> Self</span>}
-        {managerKey && <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: SNAPSHOT_META[managerKey].color }} /> Manager (final)</span>}
+        {selfKey && <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-white border-2 inline-block" style={{ borderColor: SNAPSHOT_META[selfKey].color }} /> {t("Self", "ตนเอง", lang)}</span>}
+        {managerKey && <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: SNAPSHOT_META[managerKey].color }} /> {t("Manager (final)", "หัวหน้างาน (สุดท้าย)", lang)}</span>}
       </div>
     </div>
   );
@@ -1701,12 +1946,12 @@ function B4Page({ data, setField, role }) {
   return (
     <div>
       <SectionHeader pillar="Overall" code={t("B4 · Overall", "B4 · ภาพรวม", lang)} />
-      <Field label={t("[Self] Any other reflections", th.selfOther, lang)} required>
+      <Field label={t("Any other reflections to yourself", th.selfOther, lang)} required>
         <TextArea value={data.b4_self} onChange={(v) => setField("b4_self", v)} readOnly={role !== "employee" || selfLocked} rows={3} />
       </Field>
 
       <ManagerFieldBlock
-        label={t("[Manager] Any other feedback", th.managerOther, lang)}
+        label={t("Any other feedback for the Employee", th.managerOther, lang)}
         prompts={[]}
         value={data.b4_manager}
         onChange={(v) => setField("b4_manager", v)}
@@ -1718,7 +1963,7 @@ function B4Page({ data, setField, role }) {
 
       <div className="mb-5">
         <p className="text-sm font-medium mb-2 flex items-center gap-1.5" style={{ color: BRAND.deep }}>
-          <User className="w-3.5 h-3.5" style={{ color: BRAND.mint }} /> {t("Snapshot of Value-Add — your self-assessment", th.selfSnapshotLabel, lang)}
+          <User className="w-3.5 h-3.5" style={{ color: BRAND.mint }} /> {t("From your self-reflection, this is your snapshot of Value-Add", th.selfSnapshotLabel, lang)}
           <span className="ml-1" style={{ color: BRAND.red }}>*</span>
         </p>
         <SnapshotSelector value={data.b4_snapshot_self} onChange={(v) => setField("b4_snapshot_self", v)} readOnly={role !== "employee" || selfLocked} />
@@ -1726,7 +1971,7 @@ function B4Page({ data, setField, role }) {
 
       <div className="mb-2">
         <p className="text-sm font-medium mb-2 flex items-center gap-1.5" style={{ color: BRAND.deep }}>
-          <UsersIcon className="w-3.5 h-3.5" style={{ color: BRAND.teal }} /> {t("Snapshot of Value-Add — manager's assessment (final)", th.managerSnapshotLabel, lang)}
+          <UsersIcon className="w-3.5 h-3.5" style={{ color: BRAND.teal }} /> {t("As the Direct Manager, this is the Employee's snapshot of Value-Add (final)", th.managerSnapshotLabel, lang)}
           {role === "manager" && <span className="ml-1" style={{ color: BRAND.red }}>*</span>}
         </p>
         {role === "employee" ? (
@@ -1816,6 +2061,21 @@ function PrintView({ person, manager, data, visibleSections, onBack }) {
                 <p className="text-sm text-slate-700 mb-1"><strong>Learning:</strong> {[data.a5_learn1, data.a5_learn2, data.a5_learn3].filter(Boolean).join("; ") || "—"}</p>
                 <p className="text-sm text-slate-700 mb-1"><strong>Support needed:</strong> {data.a5_support || "—"}</p>
                 <p className="text-sm text-slate-700"><strong>Manager reflection:</strong> {data.a5_manager || "—"}</p>
+              </div>
+            );
+          }
+          if (s.id === "b3") {
+            const okrs = [1, 2, 3, 4, 5].map((i) => [data[`b3_okr${i}`], data[`b3_progress${i}`]]).filter(([o]) => o);
+            return (
+              <div key={s.id} className="mb-6 break-inside-avoid">
+                <h2 className="text-sm font-semibold mb-2" style={{ color: BRAND.deep }}>{s.nav}</h2>
+                {okrs.length > 0 && (
+                  <p className="text-sm text-slate-700 mb-1">
+                    <strong>OKRs:</strong> {okrs.map(([o, p], i) => `${o}${p ? ` (${p})` : ""}`).join("; ")}
+                  </p>
+                )}
+                <p className="text-sm text-slate-700 mb-1"><strong>{fieldLabel(s, "self")}:</strong> {selfVal || "—"}</p>
+                <p className="text-sm text-slate-700"><strong>{fieldLabel(s, "manager")}:</strong> {mgrVal || "—"}</p>
               </div>
             );
           }
@@ -1914,18 +2174,36 @@ function SubmittedScreen({ variant, onContinue }) {
 ========================================================================= */
 
 function LoginScreen({ scope, onLogin }) {
-  const { roster, lang } = useRosterCtx();
+  const { lang } = useRosterCtx();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
   const isAdminSite = scope.mode === "admin";
   const siteLabel = isAdminSite ? "Master Admin" : scope.bu;
 
-  const submit = () => {
-    const match = roster.find(
-      (usr) => usr.username.toLowerCase() === username.trim().toLowerCase() && usr.password === password.trim()
-    );
+  const submit = async () => {
+    if (!username.trim() || !password.trim() || busy) return;
+    setBusy(true);
+    setError("");
+    let match = null;
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: username.trim(), password: password.trim() }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        match = data.user;
+      }
+    } catch (e) {
+      setBusy(false);
+      setError(t("Couldn't reach the server. Please try again.", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาลองใหม่", lang));
+      return;
+    }
+    setBusy(false);
     if (!match) {
       setError(t("Username or password is incorrect. Please check with your P&O team.", "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบกับฝ่าย P&O", lang));
       return;
@@ -1974,33 +2252,41 @@ function LoginScreen({ scope, onLogin }) {
           <div className="absolute top-3 right-4"><TPCMark /></div>
           <div className="p-8 pt-5">
           <h1 className="text-xl font-semibold mb-1" style={{ color: BRAND.deep }}>
-            {isAdminSite ? t("Master Admin Sign-In", "เข้าสู่ระบบ Master Admin", lang) : `${siteLabel} — ${t("Growth & Value-Add Journey", COVER_TH.title, lang)}`}
+            {isAdminSite ? t("Master Admin Sign-In", "เข้าสู่ระบบ Master Admin", lang) : `${siteLabel} — ${t("Growth & Value-Add Journey", "แบบประเมินการเติบโต และการสร้างผลงานที่มีความหมาย (Growth & Value-Add Journey)", lang)}`}
           </h1>
           {!isAdminSite && <p className="text-xs text-slate-400 mb-1">{BU_FULL_NAME[scope.bu]}</p>}
-          {isAdminSite && (
-            <p className="text-sm text-slate-500 mb-6">
-              {t("This site is reserved for Master Admin accounts, with read-only visibility across all Companies.", "ไซต์นี้สำหรับบัญชี Master Admin เท่านั้น มีสิทธิ์ดูข้อมูลได้ทุกบริษัท (อ่านอย่างเดียว)", lang)}
-            </p>
-          )}
           {!isAdminSite && <div className="mb-4" />}
+          {isAdminSite && <div className="mb-6" />}
 
           <div className="space-y-4">
             <div>
               <label className="text-xs font-medium mb-1 block" style={{ color: BRAND.deep }}>
                 {t("Username", "ชื่อผู้ใช้", lang)}
               </label>
-              <TextInput value={username} onChange={setUsername} placeholder={isAdminSite ? "Master01" : "Vatanyathi"} />
+              <TextInput value={username} onChange={setUsername} placeholder={isAdminSite ? "Master01" : "Lalisaman"} />
               {!isAdminSite && (
-                <p className="text-xs text-slate-400 mt-1" style={{ fontFamily: FONT_STACK }}>ชื่อจริงของคุณ "และ" อักษร 3 ตัวแรกของนามสกุล เช่น Lalisa Manobal เป็น Lalisaman</p>
+                <p className="text-xs text-slate-400 mt-1" style={{ fontFamily: FONT_STACK }}>
+                  {t(
+                    'Your first name "and" the first 3 letters of your last name — e.g. Lalisa Manobal becomes Lalisaman',
+                    'ชื่อจริงของคุณ "และ" อักษร 3 ตัวแรกของนามสกุล เช่น Lalisa Manobal เป็น Lalisaman',
+                    lang
+                  )}
+                </p>
               )}
             </div>
             <div>
               <label className="text-xs font-medium mb-1 block" style={{ color: BRAND.deep }}>
                 {t("Password", "รหัสผ่าน", lang)}
               </label>
-              <TextInput type="password" value={password} onChange={setPassword} placeholder={isAdminSite ? "••••••••" : "11101995"} />
+              <TextInput type="password" value={password} onChange={setPassword} placeholder={isAdminSite ? "••••••••" : "01011995"} />
               {!isAdminSite && (
-                <p className="text-xs text-slate-400 mt-1" style={{ fontFamily: FONT_STACK }}>วันเกิดของคุณ รูปแบบ วว/ดด/ปปปป เช่น 11/10/1995 → พิมพ์ว่า 11101995</p>
+                <p className="text-xs text-slate-400 mt-1" style={{ fontFamily: FONT_STACK }}>
+                  {t(
+                    "Your birth date as DDMMYYYY — e.g. 11/10/1995 → type 11101995",
+                    "วันเกิดของคุณ รูปแบบ วว/ดด/ปปปป เช่น 01/01/1995 พิมพ์ว่า 01011995",
+                    lang
+                  )}
+                </p>
               )}
             </div>
 
@@ -2013,10 +2299,11 @@ function LoginScreen({ scope, onLogin }) {
             <button
               onClick={submit}
               onKeyDown={(e) => e.key === "Enter" && submit()}
-              className="w-full text-white text-sm font-medium rounded-xl py-2.5 transition"
+              disabled={busy}
+              className="w-full text-white text-sm font-medium rounded-xl py-2.5 transition disabled:opacity-60"
               style={{ backgroundColor: isAdminSite ? BRAND.deep : BRAND.primary }}
             >
-              {t("Sign in", "เข้าสู่ระบบ", lang)}
+              {busy ? t("Signing in…", "กำลังเข้าสู่ระบบ…", lang) : t("Sign in", "เข้าสู่ระบบ", lang)}
             </button>
           </div>
           </div>
@@ -2055,11 +2342,8 @@ function GatewayPage() {
         <div className="p-6 -mt-8 relative">
           <p className="text-xs text-slate-400 mb-2 text-center">tpcgvajourney — {t("site directory", "รายชื่อไซต์", lang)}</p>
           <h1 className="text-xl font-semibold mb-1 text-center" style={{ color: BRAND.deep }}>
-            {t("Growth & Value-Add Journey", COVER_TH.title, lang)}
+            {t("Growth & Value-Add Journey", "แบบประเมินการเติบโต และการสร้างผลงานที่มีความหมาย (Growth & Value-Add Journey)", lang)}
           </h1>
-          <p className="text-sm text-slate-500 mb-6 text-center leading-relaxed">
-            {t("Select your Company to sign in. Each Company maintains its own separate login and data.", "เลือกบริษัทของคุณเพื่อเข้าสู่ระบบ แต่ละบริษัทมีระบบเข้าสู่ระบบและข้อมูลแยกจากกัน", lang)}
-          </p>
         <div className="rounded-2xl overflow-hidden divide-y mb-4" style={{ border: `1px solid ${BRAND.line}`, backgroundColor: BRAND.card, borderColor: BRAND.line }}>
           {BUS.map((bu) => (
             <button
@@ -2172,7 +2456,7 @@ function DelegateRowControl({ employee, manager, locked }) {
 }
 
 function ManagerTeamList({ manager, onOpenEmployee, onGoSelf, onLogout, onSwitchUser, actingAs, delegatedCount, onGoDelegated }) {
-  const { roster, cycle, lang } = useRosterCtx();
+  const { roster, cycle, lang, cycleEnd } = useRosterCtx();
   const scope = { mode: "bu", bu: manager.bu };
   const [reports, setReports] = useState(null);
 
@@ -2188,7 +2472,7 @@ function ManagerTeamList({ manager, onOpenEmployee, onGoSelf, onLogout, onSwitch
             user: u,
             progress: roleProgress(visible, merged, "manager"),
             status: journeyStatus(merged),
-            overdue: isOverdue(merged),
+            overdue: isOverdue(merged, cycleEnd),
             daysWaiting: merged.employee_submitted && !merged.manager_submitted ? daysSince(merged.employee_submitted_at) : 0,
             snapshotSelf: merged.b4_snapshot_self,
             snapshotManager: merged.b4_snapshot_manager,
@@ -2217,8 +2501,8 @@ function ManagerTeamList({ manager, onOpenEmployee, onGoSelf, onLogout, onSwitch
         <h1 className="text-xl font-semibold mb-1 flex items-center gap-2" style={{ color: BRAND.deep }}>
           <UsersIcon className="w-5 h-5" style={{ color: BRAND.mint }} /> {actingAs ? actingAs : t("My Team", UI_TH.myTeam, lang)}
         </h1>
-        <p className="text-sm text-slate-500 mb-1">{t("Review progress for your direct reports. Select a person to provide your feedback.", "ดูความคืบหน้าของผู้ใต้บังคับบัญชาของคุณ เลือกบุคคลเพื่อให้ความเห็น", lang)}</p>
-        <p className="text-xs text-slate-400 mb-4">An individual review may be delegated to a colleague within the same Company; final confirmation remains yours.</p>
+        <p className="text-sm text-slate-500 mb-1">{t("Review progress for your direct reports.", "ดูความคืบหน้าของผู้ใต้บังคับบัญชาของคุณ", lang)}</p>
+        <p className="text-xs text-slate-400 mb-4">{t("An individual review may be delegated to a colleague within the same Company; final confirmation remains yours.", "คุณสามารถมอบหมายให้ผู้ใต้บังคับบัญชาของคุณช่วยให้ความคิดเห็นรายบุคคลได้ แต่ทั้งนี้คุณยังคงเป็นผู้ยืนยันผลการประเมินขั้นสุดท้าย", lang)}</p>
 
         {pending.length > 0 && (
           <div
@@ -2231,13 +2515,13 @@ function ManagerTeamList({ manager, onOpenEmployee, onGoSelf, onLogout, onSwitch
                 <>
                   <span className="font-medium">รอตรวจสอบ {pending.length} รายการ</span>
                   {oldestDays > 0 && <> รอนานที่สุด {oldestDays} วัน</>}
-                  {overdueCount > 0 && <> {overdueCount} รายการเกินกำหนด {OVERDUE_DAYS} วันแล้ว</>}
+                  {overdueCount > 0 && <> {overdueCount} รายการเกินกำหนดเส้นตายของรอบนี้แล้ว{cycleEnd ? ` (${new Date(cycleEnd).toLocaleDateString("th-TH")})` : ""}</>}
                 </>
               ) : (
                 <>
                   <span className="font-medium">{pending.length} pending review{pending.length > 1 ? "s" : ""}</span>
                   {oldestDays > 0 && <> , oldest waiting {oldestDays} day{oldestDays !== 1 ? "s" : ""}</>}.
-                  {overdueCount > 0 && <> {overdueCount} past the {OVERDUE_DAYS}-day target.</>}
+                  {overdueCount > 0 && <> {overdueCount} past this cycle's deadline{cycleEnd ? ` (${new Date(cycleEnd).toLocaleDateString()})` : ""}.</>}
                 </>
               )}
             </p>
@@ -2452,32 +2736,6 @@ function TopBar({ user, onLogout, onSwitchUser, subtitle, scope, roleSwitch }) {
               )}
             </div>
           )}
-          {onSwitchUser && (
-            <div className="relative">
-              <select
-                value={user.id}
-                onChange={(e) => onSwitchUser(roster.find((u) => u.id === e.target.value))}
-                title="Demo only — switches account instantly, within this site's scope"
-                className="appearance-none text-xs font-medium bg-white border border-dashed rounded-lg pl-7 pr-2.5 py-1.5 focus:outline-none max-w-[120px] sm:max-w-none"
-                style={{ color: "#8A6D00", borderColor: "#F3E3A8", backgroundColor: "#FFF9E8" }}
-              >
-                {["staff", "po_admin", "master_admin"].map((r) => {
-                  const opts = pool.filter((u) => u.role === r);
-                  if (!opts.length) return null;
-                  return (
-                    <optgroup key={r} label={ROLE_LABEL[r]}>
-                      {opts.map((u) => (
-                        <option key={u.id} value={u.id}>
-                          {u.firstName} {u.lastName}
-                        </option>
-                      ))}
-                    </optgroup>
-                  );
-                })}
-              </select>
-              <RefreshCcw className="w-3 h-3 absolute left-2.5 top-2.5 pointer-events-none" style={{ color: "#C9A227" }} />
-            </div>
-          )}
           <LangToggle />
           <button onClick={onLogout} className="p-1.5 text-slate-400 hover:text-red-600" title="Log out">
             <LogOut className="w-4 h-4" />
@@ -2509,7 +2767,7 @@ function snapshotColor(key) {
   }
 }
 
-function StatCard({ label, value, sub, icon: Icon, color }) {
+function StatCard({ label, value, sub, icon: Icon, color, info }) {
   return (
     <div className="rounded-2xl p-4" style={{ border: `1px solid ${BRAND.line}`, backgroundColor: BRAND.card }}>
       {Icon && (
@@ -2518,7 +2776,10 @@ function StatCard({ label, value, sub, icon: Icon, color }) {
         </div>
       )}
       <p className="text-2xl font-semibold" style={{ color: BRAND.deep }}>{value}</p>
-      <p className="text-xs text-slate-500 mt-0.5">{label}</p>
+      <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
+        {label}
+        {info && <InfoTip text={info} />}
+      </p>
       {sub && <p className="text-xs text-slate-400 mt-1">{sub}</p>}
     </div>
   );
@@ -2629,17 +2890,23 @@ function journeyStatus(d) {
   return started ? "in_progress" : "not_started";
 }
 
-const OVERDUE_DAYS = 14;
 function daysSince(iso) {
   if (!iso) return 0;
   return Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
 }
-function isOverdue(d) {
-  return !!d.employee_submitted && !d.manager_submitted && daysSince(d.employee_submitted_at) > OVERDUE_DAYS;
+// Overdue is anchored to the cycle's real deadline (an actual end date the
+// company sets, e.g. "complete by 15 Oct 2026") — not a per-person relative
+// countdown from when they happened to submit. If no end date is set yet,
+// nothing is ever flagged overdue.
+function isOverdue(d, cycleEnd) {
+  if (!cycleEnd) return false;
+  const isComplete = !!d.employee_submitted && !!d.manager_submitted;
+  if (isComplete) return false;
+  return new Date() > new Date(`${cycleEnd}T23:59:59`);
 }
 
 function AdminView({ admin, onOpenEmployee, onLogout, onSwitchUser }) {
-  const { roster, cycle, cyclesList, startNewCycle, lang } = useRosterCtx();
+  const { roster, cycle, cyclesList, startNewCycle, lang, cycleStart, cycleEnd, setCycleWindow } = useRosterCtx();
   const isMaster = admin.role === "master_admin";
   const myBUs = isMaster ? BUS : adminBUs(admin);
   const scope = isMaster ? { mode: "admin" } : { mode: "bu", bu: myBUs[0] };
@@ -2652,6 +2919,9 @@ function AdminView({ admin, onOpenEmployee, onLogout, onSwitchUser }) {
   const [viewCycle, setViewCycle] = useState(cycle);
   const [newCycleName, setNewCycleName] = useState("");
   const [showNewCycle, setShowNewCycle] = useState(false);
+  const [editWindow, setEditWindow] = useState(false);
+  const [startInput, setStartInput] = useState(cycleStart);
+  const [endInput, setEndInput] = useState(cycleEnd);
   const isHistorical = viewCycle !== cycle;
 
   const scopeBUs = buFilter === "ALL" ? myBUs : [buFilter];
@@ -2665,7 +2935,7 @@ function AdminView({ admin, onOpenEmployee, onLogout, onSwitchUser }) {
           const merged = { ...defaultData(), ...(d || {}) };
           const mgr = roster.find((m) => m.id === u.managerId);
           const peopleManager = hasReports(u.id, roster);
-          return { user: u, manager: mgr, data: merged, progress: computeProgress(merged, peopleManager, false), status: journeyStatus(merged), overdue: isOverdue(merged) };
+          return { user: u, manager: mgr, data: merged, progress: computeProgress(merged, peopleManager, false), status: journeyStatus(merged), overdue: isOverdue(merged, cycleEnd) };
         })
       );
       setRows(withData);
@@ -2733,6 +3003,10 @@ function AdminView({ admin, onOpenEmployee, onLogout, onSwitchUser }) {
       "B2 Accountability — Manager": d.b2_steward_manager || "",
       "B2 Innovation — Self": d.b2_innovation_self || "",
       "B2 Innovation — Manager": d.b2_innovation_manager || "",
+      "B3 OKRs": [1, 2, 3, 4, 5].map((i) => d[`b3_okr${i}`]).filter(Boolean).join(" | "),
+      "B3 OKR Progress": [1, 2, 3, 4, 5].map((i) => d[`b3_progress${i}`]).filter(Boolean).join(" | "),
+      "B3 Delivering Results — Self": d.b3_results_self || "",
+      "B3 Delivering Results — Manager": d.b3_results_manager || "",
       "B4 Self — Other reflections": d.b4_self || "",
       "B4 Manager — Other feedback": d.b4_manager || "",
       "Snapshot (Self)": d.b4_snapshot_self || "",
@@ -2793,7 +3067,7 @@ function AdminView({ admin, onOpenEmployee, onLogout, onSwitchUser }) {
   const tabs = [{ id: "dashboard", label: t("Dashboard", "แดชบอร์ด", lang), icon: LayoutDashboard }];
   tabs.push({ id: "people", label: t("People", "บุคลากร", lang), icon: ClipboardList });
   if (isMaster) {
-    tabs.push({ id: "logs", label: t("Activity Log", "บันทึกกิจกรรม", lang), icon: FileClock });
+    tabs.push({ id: "logs", label: t("Activity Log", "ประวัติการใช้งาน", lang), icon: FileClock });
   }
 
   return (
@@ -2860,6 +3134,53 @@ function AdminView({ admin, onOpenEmployee, onLogout, onSwitchUser }) {
                     {t("Create & switch", "สร้างและสลับ", lang)}
                   </button>
                   <button onClick={() => { setShowNewCycle(false); setNewCycleName(""); }} className="text-xs text-slate-400">{t("Cancel", "ยกเลิก", lang)}</button>
+                </div>
+              )}
+              <span className="text-xs font-medium px-2.5 py-1 rounded-full inline-flex items-center gap-1.5" style={{ backgroundColor: "#F6FBFA", color: BRAND.gray, border: `1px solid ${BRAND.line}` }}>
+                <Clock className="w-3 h-3" />
+                {cycleEnd
+                  ? t(
+                      `Deadline: ${new Date(cycleEnd).toLocaleDateString()}${cycleStart ? ` (from ${new Date(cycleStart).toLocaleDateString()})` : ""}`,
+                      `กำหนดเสร็จ: ${new Date(cycleEnd).toLocaleDateString("th-TH")}${cycleStart ? ` (เริ่ม ${new Date(cycleStart).toLocaleDateString("th-TH")})` : ""}`,
+                      lang
+                    )
+                  : t("No deadline set yet", "ยังไม่ได้กำหนดวันสิ้นสุด", lang)}
+              </span>
+              {!viewOnly && !editWindow && (
+                <button onClick={() => { setStartInput(cycleStart); setEndInput(cycleEnd); setEditWindow(true); }} className="text-xs font-medium px-2.5 py-1 rounded-full border" style={{ borderColor: BRAND.line, color: BRAND.deep }}>
+                  {cycleEnd ? t("Change", "เปลี่ยน", lang) : t("Set deadline", "กำหนดวันสิ้นสุด", lang)}
+                </button>
+              )}
+              {editWindow && (
+                <div className="flex items-center gap-1.5">
+                  <div>
+                    <label className="text-[10px] text-slate-400 block">{t("Start", "วันเริ่ม", lang)}</label>
+                    <input
+                      type="date"
+                      value={startInput}
+                      onChange={(e) => setStartInput(e.target.value)}
+                      className="text-xs rounded-lg border px-2 py-1.5 focus:outline-none"
+                      style={{ borderColor: BRAND.line }}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-slate-400 block">{t("End (deadline)", "วันสิ้นสุด", lang)}</label>
+                    <input
+                      type="date"
+                      value={endInput}
+                      onChange={(e) => setEndInput(e.target.value)}
+                      className="text-xs rounded-lg border px-2 py-1.5 focus:outline-none"
+                      style={{ borderColor: BRAND.line }}
+                    />
+                  </div>
+                  <button
+                    onClick={async () => { await setCycleWindow(startInput, endInput); setEditWindow(false); }}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg text-white self-end"
+                    style={{ backgroundColor: BRAND.primary }}
+                  >
+                    {t("Save", "บันทึก", lang)}
+                  </button>
+                  <button onClick={() => setEditWindow(false)} className="text-xs text-slate-400 self-end pb-1.5">{t("Cancel", "ยกเลิก", lang)}</button>
                 </div>
               )}
             </div>
@@ -2931,8 +3252,32 @@ function AdminView({ admin, onOpenEmployee, onLogout, onSwitchUser }) {
             <StatCard label={t("People in scope", "จำนวนบุคลากรในขอบเขต", lang)} value={total} icon={UsersIcon} color={BRAND.primary} />
             <StatCard label={t("Avg progress", "ความคืบหน้าเฉลี่ย", lang)} value={`${avgProgress}%`} icon={Clock} color={BRAND.teal} />
             <StatCard label={t("Completed", "เสร็จสมบูรณ์", lang)} value={completedCount} sub={total ? `${Math.round((completedCount / total) * 100)}%` : undefined} icon={CheckCircle2} color={BRAND.mint} />
-            <StatCard label={t("Needs confirmation", "รอการยืนยัน", lang)} value={needsConfirmationCount} icon={RefreshCcw} color={BRAND.primary} />
-            <StatCard label={t("Overdue", "เกินกำหนด", lang)} value={overdueCount} icon={AlertCircle} color={BRAND.red} />
+            <StatCard
+              label={t("Needs confirmation", "รอการยืนยัน", lang)}
+              value={needsConfirmationCount}
+              icon={RefreshCcw}
+              color={BRAND.primary}
+              info={t(
+                "A delegate has drafted the manager's feedback for this person, but the direct manager hasn't reviewed and confirmed it yet — it isn't official until they do.",
+                "ผู้ได้รับมอบหมายได้ร่างความเห็นของหัวหน้างานให้คนนี้แล้ว แต่หัวหน้างานตัวจริงยังไม่ได้ตรวจสอบและยืนยัน จึงยังไม่ถือเป็นทางการ",
+                lang
+              )}
+            />
+            <StatCard
+              label={t("Overdue", "เกินกำหนด", lang)}
+              value={overdueCount}
+              icon={AlertCircle}
+              color={BRAND.red}
+              info={t(
+                cycleEnd
+                  ? `This person hasn't completed their review (both self-assessment and manager review) by this cycle's deadline of ${new Date(cycleEnd).toLocaleDateString()}. Master Admin can change the deadline below.`
+                  : "No cycle deadline is set yet, so nothing is flagged overdue. Master Admin can set one below.",
+                cycleEnd
+                  ? `บุคคลนี้ยังไม่เสร็จสิ้นการประเมิน (ทั้งการประเมินตนเองและการตรวจสอบของหัวหน้างาน) ภายในกำหนดของรอบนี้คือ ${new Date(cycleEnd).toLocaleDateString("th-TH")} Master Admin สามารถเปลี่ยนกำหนดได้ด้านล่าง`
+                  : "ยังไม่ได้กำหนดวันสิ้นสุดของรอบนี้ จึงยังไม่มีการแจ้งเตือนเกินกำหนด Master Admin สามารถกำหนดได้ด้านล่าง",
+                lang
+              )}
+            />
             <StatCard label={t("Manager groups", "กลุ่มหัวหน้างาน", lang)} value={managerGroups.length} icon={Building2} color={BRAND.gray} />
           </div>
 
@@ -3157,9 +3502,10 @@ function PersonEditPanel({ initial, roster, onSave, onCancel, restrictBUs, restr
   const isNew = !initial;
   const [form, setForm] = useState(() =>
     initial
-      ? { ...initial }
-      : { id: `p-${Date.now()}`, firstName: "", lastName: "", username: "", password: "", role: "staff", bu: restrictBUs ? restrictBUs[0] : BUS[0], buList: null, department: "", jobGrade: "", designation: "", managerId: null, employeeId: "", needsEvaluation: true, functionalManagerId: null }
+      ? { ...initial, password: undefined } // never load the stored hash into the form
+      : { id: `p-${Date.now()}`, firstName: "", lastName: "", username: "", role: "staff", bu: restrictBUs ? restrictBUs[0] : BUS[0], buList: null, department: "", jobGrade: "", designation: "", managerId: null, employeeId: "", needsEvaluation: true, functionalManagerId: null }
   );
+  const [newPassword, setNewPassword] = useState("");
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const buChoices = restrictBUs || BUS;
   const managerOptions = roster
@@ -3181,12 +3527,14 @@ function PersonEditPanel({ initial, roster, onSave, onCancel, restrictBUs, restr
       <p className="text-sm font-semibold mb-3" style={{ color: BRAND.deep }}>
         {isNew ? "Add Person" : `Edit ${initial.firstName} ${initial.lastName}`}
       </p>
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-3 mb-3">
         <Field label="First name"><TextInput value={form.firstName} onChange={(v) => set("firstName", v)} /></Field>
         <Field label="Last name"><TextInput value={form.lastName} onChange={(v) => set("lastName", v)} /></Field>
         <Field label="Employee Code"><TextInput value={form.employeeId} onChange={(v) => set("employeeId", v)} placeholder="e.g. TH08-25003" /></Field>
         <Field label="Username (for login)"><TextInput value={form.username} onChange={(v) => set("username", v)} /></Field>
-        <Field label="Password"><TextInput value={form.password} onChange={(v) => set("password", v)} /></Field>
+        <Field label={isNew ? "Password" : "Set new password (leave blank to keep unchanged)"}>
+          <TextInput value={newPassword} onChange={setNewPassword} placeholder={isNew ? "" : "•••••••• (unchanged)"} />
+        </Field>
         {!restrictStaffOnly && (
           <Field label="Account type">
             <select value={form.role} onChange={(e) => set("role", e.target.value)} className={selectCls} style={{ borderColor: BRAND.line }}>
@@ -3271,8 +3619,8 @@ function PersonEditPanel({ initial, roster, onSave, onCancel, restrictBUs, restr
           Cancel
         </button>
         <button
-          onClick={() => onSave(form)}
-          disabled={!form.firstName || !form.lastName || !form.username || !form.password}
+          onClick={() => onSave(form, newPassword)}
+          disabled={!form.firstName || !form.lastName || !form.username || (isNew && !newPassword)}
           className="px-4 py-2 text-sm rounded-xl text-white disabled:opacity-40"
           style={{ backgroundColor: BRAND.primary }}
         >
@@ -3329,11 +3677,27 @@ function PeopleManager({ admin, scopeBUs, viewOnly }) {
     setWipeMsg(`Done — cleared ${count} journey record${count === 1 ? "" : "s"} across every company and cycle. The roster (people, companies, reporting lines) was left untouched.`);
   };
 
-  const handleSaveEdit = async (person) => {
-    const safePerson = isScoped ? { ...person, role: "staff", bu: scopeBUs.includes(person.bu) ? person.bu : scopeBUs[0], buList: null } : person;
-    const exists = roster.some((p) => p.id === safePerson.id);
+  const handleSaveEdit = async (person, newPassword) => {
+    const existingRecord = roster.find((p) => p.id === person.id);
+    // Never write a plaintext password into the roster blob — keep the
+    // existing stored hash (or a placeholder for a brand-new person; the
+    // /api/set-passwords call right below fills in the real hash).
+    const personWithPassword = { ...person, password: existingRecord ? existingRecord.password : "unset" };
+    const safePerson = isScoped ? { ...personWithPassword, role: "staff", bu: scopeBUs.includes(personWithPassword.bu) ? personWithPassword.bu : scopeBUs[0], buList: null } : personWithPassword;
+    const exists = !!existingRecord;
     const next = exists ? roster.map((p) => (p.id === safePerson.id ? safePerson : p)) : [...roster, safePerson];
     await persist(next);
+    if (newPassword) {
+      try {
+        await fetch("/api/set-passwords", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ updates: [{ id: safePerson.id, newPassword }] }),
+        });
+      } catch (e) {
+        console.error("set-passwords failed", e);
+      }
+    }
     await appendLog(actorLabel, exists ? "Edit" : "Add", `${safePerson.firstName} ${safePerson.lastName} (${safePerson.username})`);
     setEditingId(null);
   };
@@ -3348,6 +3712,7 @@ function PeopleManager({ admin, scopeBUs, viewOnly }) {
       const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
       let added = 0, updated = 0, skipped = 0, rejected = 0, delegateLocked = 0;
       let next = [...roster];
+      const pendingPasswords = []; // [{id, newPassword}] — hashed server-side, never written to the roster blob directly
       for (const row of json) {
         const username = String(row["Username"] || row["username"] || "").trim();
         const employeeCode = String(row["Employee Code"] || row["EmployeeCode"] || row["Employee ID"] || "").trim();
@@ -3392,13 +3757,19 @@ function PeopleManager({ admin, scopeBUs, viewOnly }) {
             delegateLocked++;
           }
         }
+        const personId = idx >= 0 ? next[idx].id : `imp-${Date.now()}-${username}`;
+        const plainPasswordInFile = String(row["Password"] || "").trim();
+        if (plainPasswordInFile) pendingPasswords.push({ id: personId, newPassword: plainPasswordInFile });
         const person = {
-          id: idx >= 0 ? next[idx].id : `imp-${Date.now()}-${username}`,
+          id: personId,
           firstName: String(row["First Name"] || row["FirstName"] || "").trim() || (idx >= 0 ? next[idx].firstName : ""),
           lastName: String(row["Last Name"] || row["LastName"] || "").trim() || (idx >= 0 ? next[idx].lastName : ""),
           employeeId: employeeCode || (idx >= 0 ? next[idx].employeeId : ""),
           username,
-          password: String(row["Password"] || "").trim() || (idx >= 0 ? next[idx].password : "changeme"),
+          // Never write a plaintext password into the roster blob — keep the
+          // existing hash (or "unset" for a brand-new row); pendingPasswords
+          // above gets hashed server-side in one batch call after the loop.
+          password: idx >= 0 ? next[idx].password : "unset",
           role,
           bu: finalBu,
           buList,
@@ -3418,8 +3789,19 @@ function PeopleManager({ admin, scopeBUs, viewOnly }) {
         if (idx >= 0) { next[idx] = person; updated++; } else { next.push(person); added++; }
       }
       await persist(next);
+      if (pendingPasswords.length) {
+        try {
+          await fetch("/api/set-passwords", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ updates: pendingPasswords }),
+          });
+        } catch (e) {
+          console.error("bulk set-passwords failed", e);
+        }
+      }
       setImportMsg(
-        `Imported: ${added} added, ${updated} updated, ${skipped} skipped (missing username)${isScoped ? `, ${rejected} rejected (outside your BU)` : ""}${delegateLocked ? `, ${delegateLocked} delegate change${delegateLocked === 1 ? "" : "s"} skipped (review already completed)` : ""}.`
+        `Imported: ${added} added, ${updated} updated, ${skipped} skipped (missing username)${isScoped ? `, ${rejected} rejected (outside your BU)` : ""}${delegateLocked ? `, ${delegateLocked} delegate change${delegateLocked === 1 ? "" : "s"} skipped (review already completed)` : ""}${pendingPasswords.length ? `, ${pendingPasswords.length} password${pendingPasswords.length === 1 ? "" : "s"} set` : ""}.`
       );
       await appendLog(actorLabel, "Import", `${added} added, ${updated} updated, ${skipped} skipped${isScoped ? `, ${rejected} rejected` : ""}${delegateLocked ? `, ${delegateLocked} delegate changes blocked by completion lock` : ""}`);
     } catch (err) {
@@ -3547,6 +3929,9 @@ function PeopleManager({ admin, scopeBUs, viewOnly }) {
       {editingId === "new" && (
         <PersonEditPanel initial={null} roster={roster} onSave={handleSaveEdit} onCancel={() => setEditingId(null)} restrictBUs={scopeBUs} restrictStaffOnly={isScoped} />
       )}
+      {editingId && editingId !== "new" && editingPerson && (
+        <PersonEditPanel initial={editingPerson} roster={roster} onSave={handleSaveEdit} onCancel={() => setEditingId(null)} restrictBUs={scopeBUs} restrictStaffOnly={isScoped} />
+      )}
 
       {selectedIds.size > 0 && (
         <div className="rounded-xl px-4 py-3 mb-4 flex flex-wrap items-center gap-2.5" style={{ backgroundColor: "#F0F8F8", border: `1px solid ${BRAND.teal}` }}>
@@ -3620,7 +4005,7 @@ function PeopleManager({ admin, scopeBUs, viewOnly }) {
                     <td className="px-5 py-2.5 text-right">
                       {!viewOnly && (
                         <div className="inline-flex items-center gap-1.5">
-                          <button onClick={() => setEditingId(p.id)} className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2.5 py-1 border hover:bg-slate-50" style={{ borderColor: BRAND.line, color: BRAND.deep }}>
+                          <button onClick={() => { setEditingId(p.id); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2.5 py-1 border hover:bg-slate-50" style={{ borderColor: BRAND.line, color: BRAND.deep }}>
                             <Pencil className="w-3 h-3" /> Edit
                           </button>
                           {p.role === "staff" && p.id !== admin.id && (
@@ -3632,13 +4017,6 @@ function PeopleManager({ admin, scopeBUs, viewOnly }) {
                       )}
                     </td>
                   </tr>
-                  {editingId === p.id && (
-                    <tr>
-                      <td colSpan={9} className="px-5 pb-4">
-                        <PersonEditPanel initial={editingPerson} roster={roster} onSave={handleSaveEdit} onCancel={() => setEditingId(null)} restrictBUs={scopeBUs} restrictStaffOnly={isScoped} />
-                      </td>
-                    </tr>
-                  )}
                   {deletingId === p.id && (
                     <tr>
                       <td colSpan={9} className="px-5 pb-4">
@@ -3761,7 +4139,9 @@ export default function App() {
   // loaded in the background and swapped in if found.
   const [roster, setRosterState] = useState(SEED_ROSTER);
   const [cycle, setCycleState] = useState(DEFAULT_CYCLE);
-  const [lang, setLang] = useState("en"); // "en" | "th"
+  const [cycleStart, setCycleStartState] = useState("");
+  const [cycleEnd, setCycleEndState] = useState("");
+  const [lang, setLang] = useState("th"); // "en" | "th" — Thai default: most users are Thai-speaking staff
   const [cyclesList, setCyclesListState] = useState([DEFAULT_CYCLE]);
   const [hash, setHash] = useState(() => (typeof window !== "undefined" ? window.location.hash : ""));
   const [currentUser, setCurrentUser] = useState(null);
@@ -3822,6 +4202,27 @@ export default function App() {
     await saveCurrentCycle(trimmed);
   };
 
+  // Background-load the cycle's real start/end dates (the actual deadline
+  // the company sets, not a per-person relative countdown).
+  useEffect(() => {
+    (async () => {
+      try {
+        const w = await loadCycleWindow();
+        if (w) {
+          setCycleStartState(w.start || "");
+          setCycleEndState(w.end || "");
+        }
+      } catch {
+        // storage unavailable — keep working with no deadline set
+      }
+    })();
+  }, []);
+  const setCycleWindow = async (start, end) => {
+    setCycleStartState(start || "");
+    setCycleEndState(end || "");
+    await saveCycleWindow({ start: start || "", end: end || "" });
+  };
+
   useEffect(() => {
     const onHashChange = () => setHash(window.location.hash);
     window.addEventListener("hashchange", onHashChange);
@@ -3838,6 +4239,9 @@ export default function App() {
 
   const resetToLanding = (user) => {
     setCurrentUser(user);
+    // Staff default to Thai; Master/P&O admins default to English — either
+    // can still toggle manually, this just sets a sensible starting point.
+    setLang(user.role === "staff" ? "th" : "en");
     if (user.role === "staff" && user.needsEvaluation === false) {
       // Pure reviewer / delegate-helper — no personal journey of their own.
       if (hasReports(user.id, roster)) {
@@ -3941,7 +4345,7 @@ export default function App() {
 
   const setField = (key, value) => setData((prev) => ({ ...prev, [key]: value }));
 
-  const ctxValue = { roster, setRoster: (r) => { setRosterState(r); }, cycle, cyclesList, startNewCycle, lang, setLang };
+  const ctxValue = { roster, setRoster: (r) => { setRosterState(r); }, cycle, cyclesList, startNewCycle, lang, setLang, cycleStart, cycleEnd, setCycleWindow };
   const wrap = (node) => <RosterCtx.Provider value={ctxValue}>{node}</RosterCtx.Provider>;
 
   if (!route) return wrap(<GatewayPage />);
@@ -4022,7 +4426,7 @@ export default function App() {
   const goTo = (i) => setPageIdx(Math.max(0, Math.min(visibleSections.length - 1, i)));
   const goNext = () => {
     if (!pageComplete) {
-      setBlockedMsg("Please complete this section before moving on.");
+      setBlockedMsg(t("Please complete this section before moving on.", "กรุณากรอกข้อมูลในส่วนนี้ให้ครบก่อนไปต่อ", lang));
       return;
     }
     setBlockedMsg("");
@@ -4038,7 +4442,7 @@ export default function App() {
       if (data.employee_submitted) return;
       const allDone = visibleSections.every((s) => isPageComplete(s, data, "employee"));
       if (!allDone) {
-        setBlockedMsg("Please complete every section before submitting.");
+        setBlockedMsg(t("Please complete every section before submitting.", "ท่านยังกรอกแบบประเมินไม่ครบ กรุณากรอกแบบประเมินให้ครบทุกส่วน", lang));
         return;
       }
       setBlockedMsg("");
@@ -4047,7 +4451,7 @@ export default function App() {
       if (managerCanFinalize && data.manager_submitted) return;
       const allDone = visibleSections.every((s) => isPageComplete(s, data, "manager"));
       if (!allDone) {
-        setBlockedMsg("Please complete every section before finishing.");
+        setBlockedMsg(t("Please complete every section before finishing.", "ท่านยังกรอกความเห็นไม่ครบ กรุณากรอกให้ครบทุกส่วน", lang));
         return;
       }
       setBlockedMsg("");
@@ -4114,12 +4518,12 @@ export default function App() {
           effectiveRole === "employee"
             ? t("Submit your journey?", "ส่งแบบประเมินของคุณ?", lang)
             : managerCanFinalize
-            ? t("Finish your review?", "เสร็จสิ้นการตรวจสอบของคุณ?", lang)
+            ? t("Confirm your review and send your feedback?", "ยืนยันการตรวจสอบและส่งความเห็น?", lang)
             : t(`Send to ${managerLabel} for confirmation?`, `ส่งให้ ${managerLabel} เพื่อยืนยัน?`, lang)
         }
         body={
           effectiveRole === "employee"
-            ? t("This is final — you will not be able to change your answers after submitting. Your manager will be able to review and respond.", "นี่คือขั้นตอนสุดท้าย — คุณจะไม่สามารถแก้ไขคำตอบได้หลังจากส่งแล้ว หัวหน้างานของคุณจะสามารถตรวจสอบและตอบกลับได้", lang)
+            ? t("You will not be able to change your answers after submitting. Once submitted, your manager will review and share their feedback.", "คุณจะไม่สามารถแก้ไขคำตอบได้หลังจากส่งแบบประเมิน เมื่อส่งแบบประเมินแล้ว หัวหน้างานของคุณจะเข้ามาตรวจสอบและแสดงความคิดเห็นต่อไป", lang)
             : managerCanFinalize
             ? drafter
               ? t(
@@ -4127,7 +4531,7 @@ export default function App() {
                   `นี่คือขั้นตอนสุดท้าย — คุณจะไม่สามารถแก้ไขความเห็นได้หลังจากเสร็จสิ้น ${drafter.firstName} ${drafter.lastName} ได้ร่างเนื้อหานี้แทนคุณ การยืนยันหมายความว่าคุณอนุมัติเนื้อหานี้ในฐานะของคุณเอง`,
                   lang
                 )
-              : t("This is final — you will not be able to change your feedback after finishing. The employee will be able to see it.", "นี่คือขั้นตอนสุดท้าย — คุณจะไม่สามารถแก้ไขความเห็นได้หลังจากเสร็จสิ้น พนักงานจะสามารถเห็นความเห็นนี้ได้", lang)
+              : t("Once you confirm, you will not be able to change your feedback again. The employee will be able to see your feedback after this.", "เมื่อกดยืนยันการประเมินแล้ว คุณจะไม่สามารถแก้ไขความเห็นได้อีก พนักงานจะสามารถเห็นความเห็นของคุณได้หลังจากนี้", lang)
             : t(
                 `${managerLabel} will need to review your draft and give the final confirmation before it becomes official. You can still edit your draft until then.`,
                 `${managerLabel} จะต้องตรวจสอบร่างของคุณและให้การยืนยันขั้นสุดท้ายก่อนจึงจะเป็นทางการ คุณยังสามารถแก้ไขร่างได้จนกว่าจะถึงเวลานั้น`,
@@ -4170,7 +4574,7 @@ export default function App() {
       <div className="sticky top-0 z-10 border-b" style={{ backgroundColor: "rgba(246,251,250,0.92)", backdropFilter: "blur(6px)", borderColor: BRAND.line }}>
         <div style={{ height: 3, background: `linear-gradient(to right, ${BRAND.deep}, ${BRAND.teal}, ${BRAND.mint})` }} />
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-3.5">
-          <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
             <div className="flex items-center gap-2 min-w-0">
               {!(currentUser.role === "staff" && viewingSelf && !isAdminViewing) && (
                 <button
@@ -4193,9 +4597,9 @@ export default function App() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2 flex-wrap">
               {!isAdminViewing && (iAmManager || delegatedReports.length > 0) && (
-                <div className="hidden sm:flex rounded-full p-0.5" style={{ backgroundColor: "#E9F3F2" }}>
+                <div className="flex rounded-full p-0.5" style={{ backgroundColor: "#E9F3F2" }}>
                   {currentUser.role === "staff" && currentUser.needsEvaluation !== false && (
                     <button
                       onClick={handleGoSelf}
@@ -4234,30 +4638,6 @@ export default function App() {
                   <Printer className="w-4 h-4" />
                 </button>
               )}
-              <div className="relative">
-                <select
-                  value={currentUser.id}
-                  onChange={(e) => handleSwitchUser(roster.find((u) => u.id === e.target.value))}
-                  title="Demo only — switches account instantly, within this site's scope"
-                  className="appearance-none text-xs font-medium bg-white border border-dashed rounded-lg pl-7 pr-2.5 py-1.5 focus:outline-none max-w-[110px] sm:max-w-none"
-                  style={{ color: "#8A6D00", borderColor: "#F3E3A8", backgroundColor: "#FFF9E8" }}
-                >
-                  {["staff", "po_admin", "master_admin"].map((r) => {
-                    const opts = scopedUsers(route, roster).filter((u) => u.role === r);
-                    if (!opts.length) return null;
-                    return (
-                      <optgroup key={r} label={ROLE_LABEL[r]}>
-                        {opts.map((u) => (
-                          <option key={u.id} value={u.id}>
-                            {u.firstName} {u.lastName}
-                          </option>
-                        ))}
-                      </optgroup>
-                    );
-                  })}
-                </select>
-                <RefreshCcw className="w-3 h-3 absolute left-2.5 top-2.5 pointer-events-none" style={{ color: "#C9A227" }} />
-              </div>
               <LangToggle />
               <button onClick={handleLogout} className="p-1.5 text-slate-400 hover:text-red-600" title="Log out">
                 <LogOut className="w-4 h-4" />
@@ -4330,6 +4710,7 @@ export default function App() {
           {["b1-learning", "b1-integrity", "b1-coaching", "b1-connection", "b2-collab", "b2-steward", "b2-innovation"].includes(section.id) && (
             <ReflectionPage section={section} data={data} setField={setField} role={effectiveRole} />
           )}
+          {section.id === "b3" && <B3Page data={data} setField={setField} role={effectiveRole} />}
           {section.id === "b4" && <B4Page data={data} setField={setField} role={effectiveRole} />}
         </div>
 
